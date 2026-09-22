@@ -1,0 +1,6 @@
+@SistLubri.Api_HostAddress = http://localhost:5033
+
+GET {{SistLubri.Api_HostAddress}}/api/health
+Accept: application/json
+
+###

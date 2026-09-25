@@ -27,3 +27,7 @@ dotnet run --project src/SistLubri.Api
 ```
 
 Durante el desarrollo, OpenAPI queda disponible en `/openapi/v1.json` y el estado de la API en `/api/health`.
+
+## Planificacion
+
+El plan de sprints, capacidad del equipo y flujo de trabajo se encuentra en [`docs/PLAN_SCRUM.md`](docs/PLAN_SCRUM.md).

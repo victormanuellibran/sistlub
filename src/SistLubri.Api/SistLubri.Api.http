@@ -1,6 +1,25 @@
-@SistLubri.Api_HostAddress = http://localhost:5033
+@host = http://localhost:5033
 
-GET {{SistLubri.Api_HostAddress}}/api/health
+GET {{host}}/api/health
+Accept: application/json
+
+###
+
+POST {{host}}/api/clientes
+Content-Type: application/json
+
+{
+  "nombre": "Ana",
+  "apellido": "Gomez",
+  "telefono": "351 555-0101",
+  "email": "ana@example.com",
+  "domicilio": "Alvear 123",
+  "observaciones": null
+}
+
+###
+
+GET {{host}}/api/clientes?buscar=Ana
 Accept: application/json
 
 ###

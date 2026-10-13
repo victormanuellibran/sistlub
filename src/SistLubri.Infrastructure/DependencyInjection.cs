@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using SistLubri.Application.Clientes;
 using SistLubri.Application.Common.Persistence;
+using SistLubri.Application.Productos;
 using SistLubri.Application.Vehiculos;
 using SistLubri.Infrastructure.Persistence;
 using SistLubri.Infrastructure.Persistence.Repositories;
@@ -17,6 +18,7 @@ public static class DependencyInjection
         services.AddDbContext<SistLubriDbContext>(options => options.UseSqlServer(connectionString));
         services.AddScoped<IClienteRepository, ClienteRepository>();
         services.AddScoped<IVehiculoRepository, VehiculoRepository>();
+        services.AddScoped<IProductoRepository, ProductoRepository>();
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<SistLubriDbContext>());
 
         return services;

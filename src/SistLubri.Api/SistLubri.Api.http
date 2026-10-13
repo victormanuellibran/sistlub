@@ -23,3 +23,47 @@ GET {{host}}/api/clientes?buscar=Ana
 Accept: application/json
 
 ###
+
+# @name crearProducto
+POST {{host}}/api/productos
+Content-Type: application/json
+
+{
+  "codigo": "ACE-10W40-4L",
+  "nombre": "Aceite 10W40",
+  "marca": "Ejemplo",
+  "categoria": "Aceites",
+  "presentacion": "Bidon 4 L",
+  "unidadMedida": "Unidad",
+  "precioVenta": 35000,
+  "costoCompra": 25000,
+  "esFraccionado": false,
+  "stockInicial": 10,
+  "stockMinimo": 3
+}
+
+###
+
+@productoId = {{crearProducto.response.body.$.id}}
+
+POST {{host}}/api/productos/{{productoId}}/movimientos
+Content-Type: application/json
+
+{
+  "tipo": "Salida",
+  "cantidad": 2,
+  "motivo": "Prueba de salida manual",
+  "referenciaId": null
+}
+
+###
+
+GET {{host}}/api/productos/{{productoId}}/movimientos
+Accept: application/json
+
+###
+
+GET {{host}}/api/productos/alertas
+Accept: application/json
+
+###

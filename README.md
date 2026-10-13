@@ -35,17 +35,21 @@ Tambien se pueden aplicar de forma manual:
 dotnet ef database update --project src/SistLubri.Infrastructure --startup-project src/SistLubri.Api
 ```
 
-OpenAPI queda disponible en `/openapi/v1.json` y el estado de la API en `/api/health`.
+Swagger queda disponible en `/swagger`, OpenAPI en `/openapi/v1.json` y el estado de la API en `/api/health`.
 
 ## Modulos disponibles
 
-El primer corte vertical implementa Clientes y Vehiculos:
+Los cortes verticales disponibles implementan Clientes, Vehiculos, Productos e Inventario:
 
 - alta, busqueda, consulta y modificacion de clientes;
 - desactivacion y reactivacion sin eliminar informacion historica;
 - alta de vehiculos asociados a clientes activos;
 - busqueda por patente, modificacion, proximo cambio por kilometraje y cambio de titular;
-- validacion de telefonos, patentes y registros duplicados.
+- validacion de telefonos, patentes y registros duplicados;
+- alta, busqueda, consulta, modificacion y desactivacion de productos;
+- precios, costos, presentaciones, unidades de medida y productos fraccionados;
+- carga inicial, entradas, salidas y ajustes de inventario con historial auditable;
+- stock minimo, alertas de bajo stock y proteccion contra existencias negativas.
 
 Las solicitudes de ejemplo se encuentran en `src/SistLubri.Api/SistLubri.Api.http`.
 

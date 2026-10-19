@@ -68,9 +68,25 @@ public sealed class Vehiculo : Entity
             throw new DomainException("El kilometraje no puede ser negativo.");
         }
 
+        if (KilometrajeActual.HasValue
+            && kilometrajeActual.HasValue
+            && kilometrajeActual < KilometrajeActual)
+        {
+            throw new DomainException(
+                "El kilometraje actual no puede ser menor al ultimo kilometraje registrado.");
+        }
+
         if (proximoCambioKilometraje < 0)
         {
             throw new DomainException("El kilometraje del proximo cambio no puede ser negativo.");
+        }
+
+        if (kilometrajeActual.HasValue
+            && proximoCambioKilometraje.HasValue
+            && proximoCambioKilometraje <= kilometrajeActual)
+        {
+            throw new DomainException(
+                "El kilometraje del proximo cambio debe ser mayor al kilometraje actual.");
         }
 
         Anio = anio;

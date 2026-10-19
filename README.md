@@ -39,7 +39,7 @@ Swagger queda disponible en `/swagger`, OpenAPI en `/openapi/v1.json` y el estad
 
 ## Modulos disponibles
 
-Los cortes verticales disponibles implementan Clientes, Vehiculos, Productos e Inventario:
+Los cortes verticales disponibles implementan Clientes, Vehiculos, Productos, Inventario y Servicios vehiculares:
 
 - alta, busqueda, consulta y modificacion de clientes;
 - desactivacion y reactivacion sin eliminar informacion historica;
@@ -50,6 +50,9 @@ Los cortes verticales disponibles implementan Clientes, Vehiculos, Productos e I
 - precios, costos, presentaciones, unidades de medida y productos fraccionados;
 - carga inicial, entradas, salidas y ajustes de inventario con historial auditable;
 - stock minimo, alertas de bajo stock y proteccion contra existencias negativas.
+- apertura de orden de servicio por patente, inspeccion, danos y mano de obra;
+- detalle editable de productos usados mientras la orden esta en curso, conservando precio, costo y unidad;
+- finalizacion atomica con salidas de inventario, actualizacion del kilometraje y consulta de historial por patente.
 
 Las solicitudes de ejemplo se encuentran en `src/SistLubri.Api/SistLubri.Api.http`.
 

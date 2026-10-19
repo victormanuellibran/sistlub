@@ -181,7 +181,9 @@ Todos los pasos se confirman en una unica transaccion. Si uno falla, no se guard
 
 ### CU-16 Anular servicio
 
-Un servicio finalizado no se elimina. El usuario autorizado indica un motivo y el sistema conserva el servicio original, genera movimientos compensatorios cuando corresponda y actualiza la venta relacionada.
+Mientras el servicio esta `En curso`, un usuario autorizado puede anularlo ingresando un motivo. Se conserva la orden y no se modifica inventario porque el stock aun no fue descontado.
+
+La anulacion de un servicio `Finalizado` requiere la operacion de anulacion o devolucion de la venta relacionada y la confirmacion de que materiales no consumidos pueden regresar al inventario. Ese flujo se habilitara junto con Ventas y Cobros; no se deben devolver automaticamente todos los productos usados por un servicio ya realizado.
 
 ## 9. Ventas y cobros
 

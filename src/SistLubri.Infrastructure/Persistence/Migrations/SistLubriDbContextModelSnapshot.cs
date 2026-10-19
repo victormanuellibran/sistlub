@@ -215,6 +215,133 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.ToTable("Productos", (string)null);
                 });
 
+            modelBuilder.Entity("SistLubri.Domain.Servicios.DetalleServicio", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Cantidad")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<string>("CodigoProducto")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<decimal>("CostoUnitario")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("EsFraccionado")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NombreProducto")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<decimal>("PrecioUnitario")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("ProductoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ServicioVehicularId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("UnidadMedida")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductoId");
+
+                    b.HasIndex("ServicioVehicularId", "ProductoId")
+                        .IsUnique();
+
+                    b.ToTable("DetallesServicio", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Servicios.ServicioVehicular", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("AnuladoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ClienteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ClienteNombre")
+                        .IsRequired()
+                        .HasMaxLength(201)
+                        .HasColumnType("nvarchar(201)");
+
+                    b.Property<DateTimeOffset>("CreadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("DanosExistentes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTimeOffset?>("FinalizadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("InspeccionPrevia")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<int>("KilometrajeIngreso")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("ManoObra")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("MotivoAnulacion")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)");
+
+                    b.Property<string>("Patente")
+                        .IsRequired()
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("TrabajoSolicitado")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("VehiculoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClienteId");
+
+                    b.HasIndex("CreadoEnUtc");
+
+                    b.HasIndex("Patente");
+
+                    b.HasIndex("VehiculoId");
+
+                    b.ToTable("ServiciosVehiculares", (string)null);
+                });
+
             modelBuilder.Entity("SistLubri.Domain.Vehiculos.Vehiculo", b =>
                 {
                     b.Property<Guid>("Id")
@@ -284,6 +411,38 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.Navigation("Producto");
                 });
 
+            modelBuilder.Entity("SistLubri.Domain.Servicios.DetalleServicio", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Productos.Producto", null)
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistLubri.Domain.Servicios.ServicioVehicular", "ServicioVehicular")
+                        .WithMany("Detalles")
+                        .HasForeignKey("ServicioVehicularId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("ServicioVehicular");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Servicios.ServicioVehicular", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Clientes.Cliente", null)
+                        .WithMany()
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistLubri.Domain.Vehiculos.Vehiculo", null)
+                        .WithMany()
+                        .HasForeignKey("VehiculoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SistLubri.Domain.Vehiculos.Vehiculo", b =>
                 {
                     b.HasOne("SistLubri.Domain.Clientes.Cliente", "Cliente")
@@ -298,6 +457,11 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
             modelBuilder.Entity("SistLubri.Domain.Productos.Producto", b =>
                 {
                     b.Navigation("Movimientos");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Servicios.ServicioVehicular", b =>
+                {
+                    b.Navigation("Detalles");
                 });
 #pragma warning restore 612, 618
         }

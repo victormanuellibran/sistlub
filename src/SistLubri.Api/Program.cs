@@ -1,18 +1,26 @@
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
 using SistLubri.Api.Common;
 using SistLubri.Application.Clientes;
+using SistLubri.Application.Productos;
+using SistLubri.Application.Servicios;
 using SistLubri.Application.Vehiculos;
 using SistLubri.Infrastructure;
 using SistLubri.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddJsonOptions(options =>
+{
+    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+});
 builder.Services.AddOpenApi();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddScoped<ClienteService>();
 builder.Services.AddScoped<VehiculoService>();
+builder.Services.AddScoped<ProductoService>();
+builder.Services.AddScoped<ServicioVehicularService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? throw new InvalidOperationException("No se configuro la conexion DefaultConnection.");

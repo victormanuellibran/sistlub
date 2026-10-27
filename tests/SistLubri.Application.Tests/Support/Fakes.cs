@@ -1,7 +1,11 @@
 using SistLubri.Application.Clientes;
 using SistLubri.Application.Common.Persistence;
+using SistLubri.Application.Productos;
+using SistLubri.Application.Servicios;
 using SistLubri.Application.Vehiculos;
 using SistLubri.Domain.Clientes;
+using SistLubri.Domain.Productos;
+using SistLubri.Domain.Servicios;
 using SistLubri.Domain.Vehiculos;
 
 namespace SistLubri.Application.Tests.Support;
@@ -104,5 +108,98 @@ internal sealed class FakeUnitOfWork : IUnitOfWork
     {
         SaveCount++;
         return Task.FromResult(1);
+    }
+}
+
+internal sealed class FakeProductoRepository(params Producto[] productos) : IProductoRepository
+{
+    public List<Producto> Items { get; } = [.. productos];
+
+    public Task<Producto?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(Items.SingleOrDefault(producto => producto.Id == id));
+    }
+
+    public Task<IReadOnlyList<Producto>> SearchAsync(
+        string? search,
+        bool includeInactive,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyList<Producto> result = Items
+            .Where(producto => includeInactive || producto.Activo)
+            .ToArray();
+        return Task.FromResult(result);
+    }
+
+    public Task<IReadOnlyList<Producto>> GetAlertsAsync(CancellationToken cancellationToken = default)
+    {
+        IReadOnlyList<Producto> result = Items
+            .Where(producto =>
+                producto.Activo &&
+                producto.EstadoInventario != EstadoInventario.Disponible)
+            .ToArray();
+        return Task.FromResult(result);
+    }
+
+    public Task<IReadOnlyList<MovimientoInventario>> GetMovementsAsync(
+        Guid productoId,
+        TipoMovimientoInventario? tipo,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyList<MovimientoInventario> result = Items
+            .Single(producto => producto.Id == productoId)
+            .Movimientos
+            .Where(movimiento => !tipo.HasValue || movimiento.Tipo == tipo.Value)
+            .ToArray();
+        return Task.FromResult(result);
+    }
+
+    public Task<bool> ExistsCodeAsync(
+        string codigo,
+        Guid? excludingId = null,
+        CancellationToken cancellationToken = default)
+    {
+        var exists = Items.Any(producto =>
+            producto.Codigo == codigo &&
+            (!excludingId.HasValue || producto.Id != excludingId.Value));
+        return Task.FromResult(exists);
+    }
+
+    public void Add(Producto producto)
+    {
+        Items.Add(producto);
+    }
+
+    public void AddMovement(MovimientoInventario movimiento)
+    {
+    }
+}
+
+internal sealed class FakeServicioVehicularRepository(params ServicioVehicular[] servicios)
+    : IServicioVehicularRepository
+{
+    public List<ServicioVehicular> Items { get; } = [.. servicios];
+
+    public Task<ServicioVehicular?> GetByIdAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(Items.SingleOrDefault(servicio => servicio.Id == id));
+    }
+
+    public Task<IReadOnlyList<ServicioVehicular>> GetByVehiculoIdAsync(
+        Guid vehiculoId,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyList<ServicioVehicular> result = Items
+            .Where(servicio => servicio.VehiculoId == vehiculoId)
+            .OrderByDescending(servicio => servicio.CreadoEnUtc)
+            .ToArray();
+        return Task.FromResult(result);
+    }
+
+    public void Add(ServicioVehicular servicio)
+    {
+        Items.Add(servicio);
     }
 }

@@ -49,4 +49,32 @@ public sealed class VehiculoTests
         Assert.Throws<DomainException>(() =>
             new Vehiculo(Guid.NewGuid(), "AB123CD", "Toyota", "Corolla", 2020, 50_000, -1));
     }
+
+    [Fact]
+    public void Update_RejectsLowerCurrentMileage()
+    {
+        var vehiculo = new Vehiculo(
+            Guid.NewGuid(),
+            "AB123CD",
+            "Toyota",
+            "Corolla",
+            2020,
+            50_000,
+            60_000);
+
+        Assert.Throws<DomainException>(() => vehiculo.ActualizarDatos(
+            "Toyota",
+            "Corolla",
+            2020,
+            49_999,
+            60_000,
+            null));
+    }
+
+    [Fact]
+    public void Create_RejectsNextServiceMileageNotAfterCurrentMileage()
+    {
+        Assert.Throws<DomainException>(() =>
+            new Vehiculo(Guid.NewGuid(), "AB123CD", "Toyota", "Corolla", 2020, 50_000, 50_000));
+    }
 }

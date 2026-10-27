@@ -108,6 +108,13 @@ public sealed class Producto : Entity
             throw new DomainException("La unidad de medida no es valida.");
         }
 
+        if ((UnidadMedida != unidadMedida || EsFraccionado != esFraccionado)
+            && _movimientos.Count > 0)
+        {
+            throw new DomainException(
+                "No se puede cambiar la unidad o el fraccionado de un producto con movimientos de inventario.");
+        }
+
         if (precioVenta < 0)
         {
             throw new DomainException("El precio de venta no puede ser negativo.");

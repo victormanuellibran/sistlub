@@ -1,9 +1,11 @@
 using SistLubri.Application.Clientes;
 using SistLubri.Application.Common.Persistence;
 using SistLubri.Application.Productos;
+using SistLubri.Application.Servicios;
 using SistLubri.Application.Vehiculos;
 using SistLubri.Domain.Clientes;
 using SistLubri.Domain.Productos;
+using SistLubri.Domain.Servicios;
 using SistLubri.Domain.Vehiculos;
 
 namespace SistLubri.Application.Tests.Support;
@@ -170,5 +172,34 @@ internal sealed class FakeProductoRepository(params Producto[] productos) : IPro
 
     public void AddMovement(MovimientoInventario movimiento)
     {
+    }
+}
+
+internal sealed class FakeServicioVehicularRepository(params ServicioVehicular[] servicios)
+    : IServicioVehicularRepository
+{
+    public List<ServicioVehicular> Items { get; } = [.. servicios];
+
+    public Task<ServicioVehicular?> GetByIdAsync(
+        Guid id,
+        CancellationToken cancellationToken = default)
+    {
+        return Task.FromResult(Items.SingleOrDefault(servicio => servicio.Id == id));
+    }
+
+    public Task<IReadOnlyList<ServicioVehicular>> GetByVehiculoIdAsync(
+        Guid vehiculoId,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyList<ServicioVehicular> result = Items
+            .Where(servicio => servicio.VehiculoId == vehiculoId)
+            .OrderByDescending(servicio => servicio.CreadoEnUtc)
+            .ToArray();
+        return Task.FromResult(result);
+    }
+
+    public void Add(ServicioVehicular servicio)
+    {
+        Items.Add(servicio);
     }
 }

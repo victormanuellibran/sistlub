@@ -67,3 +67,63 @@ GET {{host}}/api/productos/alertas
 Accept: application/json
 
 ###
+
+# Servicio: al iniciar una orden no se modifica stock.
+# Reemplace la patente y el productoId por registros existentes en la base local.
+# @name crearServicio
+POST {{host}}/api/servicios
+Content-Type: application/json
+
+{
+  "patente": "AB123CD",
+  "kilometrajeIngreso": 50000,
+  "trabajoSolicitado": "Cambio de aceite y filtro",
+  "inspeccionPrevia": "Sin novedades visibles",
+  "danosExistentes": null,
+  "observaciones": null,
+  "manoObra": 12000,
+  "detalles": [
+    {
+      "productoId": "00000000-0000-0000-0000-000000000001",
+      "cantidad": 4
+    }
+  ]
+}
+
+###
+
+@servicioId = {{crearServicio.response.body.$.id}}
+
+GET {{host}}/api/servicios/{{servicioId}}
+Accept: application/json
+
+###
+
+PUT {{host}}/api/servicios/{{servicioId}}/detalles
+Content-Type: application/json
+
+{
+  "detalles": [
+    {
+      "productoId": "00000000-0000-0000-0000-000000000001",
+      "cantidad": 4
+    }
+  ]
+}
+
+###
+
+POST {{host}}/api/servicios/{{servicioId}}/finalizar
+Content-Type: application/json
+
+{
+  "kilometrajeFinal": 50000,
+  "proximoCambioKilometraje": 60000
+}
+
+###
+
+GET {{host}}/api/servicios/patente/AB123CD
+Accept: application/json
+
+###

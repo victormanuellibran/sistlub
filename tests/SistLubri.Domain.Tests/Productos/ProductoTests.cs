@@ -83,6 +83,48 @@ public sealed class ProductoTests
             "Cantidad sin precision suficiente"));
     }
 
+    [Fact]
+    public void Update_RejectsChangingUnitAfterInventoryMovement()
+    {
+        var producto = CreateProduct(stockInicial: 1m);
+
+        Assert.Throws<DomainException>(() => producto.ActualizarDatos(
+            "Aceite 10W40",
+            "Marca",
+            "Aceites",
+            "Bidon 4 L",
+            UnidadMedidaProducto.Litro,
+            30_000m,
+            20_000m,
+            false));
+    }
+
+    [Fact]
+    public void Update_RejectsChangingFractionalModeAfterInventoryMovement()
+    {
+        var producto = new Producto(
+            "ACE-002",
+            "Aceite a granel",
+            "Marca",
+            "Aceites",
+            "Tambor",
+            UnidadMedidaProducto.Litro,
+            30_000m,
+            20_000m,
+            false,
+            10m);
+
+        Assert.Throws<DomainException>(() => producto.ActualizarDatos(
+            "Aceite a granel",
+            "Marca",
+            "Aceites",
+            "Tambor",
+            UnidadMedidaProducto.Litro,
+            30_000m,
+            20_000m,
+            true));
+    }
+
     private static Producto CreateProduct(decimal stockInicial = 0, decimal stockMinimo = 0)
     {
         return new Producto(

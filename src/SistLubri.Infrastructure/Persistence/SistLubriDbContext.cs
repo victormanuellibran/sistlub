@@ -1,15 +1,29 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using SistLubri.Application.Common.Persistence;
 using SistLubri.Domain.Clientes;
+using SistLubri.Domain.Caja;
 using SistLubri.Domain.Productos;
 using SistLubri.Domain.Servicios;
 using SistLubri.Domain.Vehiculos;
+using SistLubri.Domain.Ventas;
+using SistLubri.Domain.Proveedores;
+using SistLubri.Infrastructure.Persistence.Usuarios;
 
 namespace SistLubri.Infrastructure.Persistence;
 
 public sealed class SistLubriDbContext(DbContextOptions<SistLubriDbContext> options)
-    : DbContext(options), IUnitOfWork
+    : IdentityDbContext<UsuarioSistema, IdentityRole<Guid>, Guid>(options), IUnitOfWork
 {
+    public async Task<IUnitOfWorkTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default) =>
+        new UnitOfWorkTransaction(await Database.BeginTransactionAsync(cancellationToken));
+
+    private sealed class UnitOfWorkTransaction(Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction) : IUnitOfWorkTransaction
+    {
+        public Task CommitAsync(CancellationToken cancellationToken = default) => transaction.CommitAsync(cancellationToken);
+        public ValueTask DisposeAsync() => transaction.DisposeAsync();
+    }
     public DbSet<Cliente> Clientes => Set<Cliente>();
 
     public DbSet<Vehiculo> Vehiculos => Set<Vehiculo>();
@@ -22,9 +36,22 @@ public sealed class SistLubriDbContext(DbContextOptions<SistLubriDbContext> opti
 
     public DbSet<DetalleServicio> DetallesServicio => Set<DetalleServicio>();
 
+    public DbSet<Venta> Ventas => Set<Venta>();
+    public DbSet<DetalleVenta> DetallesVenta => Set<DetalleVenta>();
+    public DbSet<PagoVenta> PagosVenta => Set<PagoVenta>();
+    public DbSet<ReintegroVenta> ReintegrosVenta => Set<ReintegroVenta>();
+    public DbSet<Proveedor> Proveedores => Set<Proveedor>();
+    public DbSet<RegistroEstadoProveedor> RegistrosEstadoProveedor => Set<RegistroEstadoProveedor>();
+    public DbSet<JornadaCaja> JornadasCaja => Set<JornadaCaja>();
+    public DbSet<MovimientoCaja> MovimientosCaja => Set<MovimientoCaja>();
+    public DbSet<MedioPago> MediosPago => Set<MedioPago>();
+    public DbSet<ConfiguracionCaja> ConfiguracionesCaja => Set<ConfiguracionCaja>();
+    public DbSet<RegistroCierreCaja> RegistrosCierreCaja => Set<RegistroCierreCaja>();
+    public DbSet<RegistroAperturaCaja> RegistrosAperturaCaja => Set<RegistroAperturaCaja>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(SistLubriDbContext).Assembly);
         base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(SistLubriDbContext).Assembly);
     }
 }

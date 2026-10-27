@@ -5,8 +5,23 @@ Accept: application/json
 
 ###
 
+# Reemplace estas credenciales por el administrador creado mediante /api/auth/bootstrap.
+# @name login
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "contrasena": "Reemplazar-Por-La-Clave-Real"
+}
+
+###
+
+@token = {{login.response.body.$.token}}
+
 POST {{host}}/api/clientes
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "nombre": "Ana",
@@ -21,12 +36,14 @@ Content-Type: application/json
 
 GET {{host}}/api/clientes?buscar=Ana
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
 # @name crearProducto
 POST {{host}}/api/productos
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "codigo": "ACE-10W40-4L",
@@ -48,6 +65,7 @@ Content-Type: application/json
 
 POST {{host}}/api/productos/{{productoId}}/movimientos
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "tipo": "Salida",
@@ -60,19 +78,22 @@ Content-Type: application/json
 
 GET {{host}}/api/productos/{{productoId}}/movimientos
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
 GET {{host}}/api/productos/alertas
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
-# Servicio: al iniciar una orden no se modifica stock.
+# Servicio: iniciar la orden reserva stock sin descontarlo del stock fisico.
 # Reemplace la patente y el productoId por registros existentes en la base local.
 # @name crearServicio
 POST {{host}}/api/servicios
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "patente": "AB123CD",
@@ -96,13 +117,24 @@ Content-Type: application/json
 
 GET {{host}}/api/servicios/{{servicioId}}
 Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+GET {{host}}/api/servicios/en-curso
+Accept: application/json
+Authorization: Bearer {{token}}
 
 ###
 
 PUT {{host}}/api/servicios/{{servicioId}}/detalles
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
+  "trabajoSolicitado": "Cambio de aceite y filtro",
+  "observaciones": "Se revisaron los niveles",
+  "manoObra": 12000,
   "detalles": [
     {
       "productoId": "00000000-0000-0000-0000-000000000001",
@@ -115,15 +147,39 @@ Content-Type: application/json
 
 POST {{host}}/api/servicios/{{servicioId}}/finalizar
 Content-Type: application/json
+Authorization: Bearer {{token}}
 
 {
   "kilometrajeFinal": 50000,
-  "proximoCambioKilometraje": 60000
+  "proximoCambioKilometraje": 60000,
+  "productosUtilizados": [
+    {
+      "productoId": "00000000-0000-0000-0000-000000000001",
+      "cantidadUtilizada": 3
+    }
+  ]
+}
+
+###
+
+POST {{host}}/api/servicios/{{servicioId}}/anular
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "motivo": "El cliente cancelo el trabajo",
+  "productosUtilizados": [
+    {
+      "productoId": "00000000-0000-0000-0000-000000000001",
+      "cantidadUtilizada": 1
+    }
+  ]
 }
 
 ###
 
 GET {{host}}/api/servicios/patente/AB123CD
 Accept: application/json
+Authorization: Bearer {{token}}
 
 ###

@@ -1,12 +1,14 @@
 using SistLubri.Application.Common.Exceptions;
 using SistLubri.Application.Common.Persistence;
+using SistLubri.Application.Common.Security;
 using SistLubri.Domain.Productos;
 
 namespace SistLubri.Application.Productos;
 
 public sealed class ProductoService(
     IProductoRepository productoRepository,
-    IUnitOfWork unitOfWork)
+    IUnitOfWork unitOfWork,
+    ICurrentUser? currentUser = null)
 {
     public async Task<ProductoDetalleDto> CreateAsync(
         CrearProductoCommand command,
@@ -29,7 +31,8 @@ public sealed class ProductoService(
             command.CostoCompra,
             command.EsFraccionado,
             command.StockInicial,
-            command.StockMinimo);
+            command.StockMinimo,
+            currentUser?.Id);
 
         productoRepository.Add(producto);
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -94,6 +97,11 @@ public sealed class ProductoService(
         CancellationToken cancellationToken = default)
     {
         var producto = await GetProductoAsync(id, cancellationToken);
+        if (!activo && producto.StockReservado > 0)
+        {
+            throw new ConflictException("No se puede desactivar un producto reservado por un servicio en curso.");
+        }
+
         producto.CambiarEstado(activo);
         await unitOfWork.SaveChangesAsync(cancellationToken);
         return MapDetalle(producto);
@@ -131,7 +139,8 @@ public sealed class ProductoService(
             command.Tipo,
             command.Cantidad,
             command.Motivo,
-            command.ReferenciaId);
+            command.ReferenciaId,
+            currentUser?.Id);
 
         productoRepository.AddMovement(movimiento);
         await unitOfWork.SaveChangesAsync(cancellationToken);
@@ -166,6 +175,8 @@ public sealed class ProductoService(
             producto.UnidadMedida,
             producto.PrecioVenta,
             producto.StockActual,
+            producto.StockReservado,
+            producto.StockDisponible,
             producto.StockMinimo,
             producto.EstadoInventario,
             producto.EsFraccionado,
@@ -185,6 +196,8 @@ public sealed class ProductoService(
             producto.PrecioVenta,
             producto.CostoCompra,
             producto.StockActual,
+            producto.StockReservado,
+            producto.StockDisponible,
             producto.StockMinimo,
             producto.EstadoInventario,
             producto.EsFraccionado,

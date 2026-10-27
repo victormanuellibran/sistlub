@@ -21,7 +21,8 @@ public sealed class ServicioVehicular : Entity
         string? inspeccionPrevia,
         string? danosExistentes,
         string? observaciones,
-        decimal manoObra)
+        decimal manoObra,
+        Guid? usuarioId = null)
     {
         if (vehiculoId == Guid.Empty || clienteId == Guid.Empty)
         {
@@ -50,6 +51,7 @@ public sealed class ServicioVehicular : Entity
         ManoObra = decimal.Round(manoObra, 2);
         Estado = EstadoServicio.EnCurso;
         CreadoEnUtc = DateTimeOffset.UtcNow;
+        CreadoPorUsuarioId = usuarioId;
     }
 
     public Guid VehiculoId { get; private init; }
@@ -62,19 +64,29 @@ public sealed class ServicioVehicular : Entity
 
     public int KilometrajeIngreso { get; private init; }
 
-    public string TrabajoSolicitado { get; private init; } = string.Empty;
+    public string TrabajoSolicitado { get; private set; } = string.Empty;
 
     public string? InspeccionPrevia { get; private init; }
 
     public string? DanosExistentes { get; private init; }
 
-    public string? Observaciones { get; private init; }
+    public string? Observaciones { get; private set; }
 
-    public decimal ManoObra { get; private init; }
+    public decimal ManoObra { get; private set; }
 
     public EstadoServicio Estado { get; private set; }
 
     public DateTimeOffset CreadoEnUtc { get; private init; }
+
+    public Guid? CreadoPorUsuarioId { get; private init; }
+
+    public Guid? ActualizadoPorUsuarioId { get; private set; }
+
+    public DateTimeOffset? ActualizadoEnUtc { get; private set; }
+
+    public Guid? FinalizadoPorUsuarioId { get; private set; }
+
+    public Guid? AnuladoPorUsuarioId { get; private set; }
 
     public DateTimeOffset? FinalizadoEnUtc { get; private set; }
 
@@ -96,7 +108,8 @@ public sealed class ServicioVehicular : Entity
         bool esFraccionado,
         decimal cantidad,
         decimal precioUnitario,
-        decimal costoUnitario)
+        decimal costoUnitario,
+        Guid? usuarioId = null)
     {
         if (Estado != EstadoServicio.EnCurso)
         {
@@ -114,6 +127,7 @@ public sealed class ServicioVehicular : Entity
                 cantidad,
                 precioUnitario,
                 costoUnitario);
+            RegistrarActualizacion(usuarioId);
             return;
         }
 
@@ -127,6 +141,7 @@ public sealed class ServicioVehicular : Entity
             cantidad,
             precioUnitario,
             costoUnitario));
+        RegistrarActualizacion(usuarioId);
     }
 
     public void EliminarDetallesExcepto(IReadOnlySet<Guid> productoIds)
@@ -139,7 +154,25 @@ public sealed class ServicioVehicular : Entity
         _detalles.RemoveAll(detalle => !productoIds.Contains(detalle.ProductoId));
     }
 
-    public void Finalizar()
+    public void ActualizarDatosEnCurso(string trabajoSolicitado, string? observaciones, decimal manoObra, Guid? usuarioId = null)
+    {
+        if (Estado != EstadoServicio.EnCurso)
+        {
+            throw new DomainException("Solo se pueden modificar los datos de un servicio en curso.");
+        }
+
+        if (manoObra < 0)
+        {
+            throw new DomainException("El importe de mano de obra no puede ser negativo.");
+        }
+
+        TrabajoSolicitado = Normalizar(trabajoSolicitado, 500, "El trabajo solicitado");
+        Observaciones = NormalizarOpcional(observaciones, 2000, "Las observaciones");
+        ManoObra = decimal.Round(manoObra, 2);
+        RegistrarActualizacion(usuarioId);
+    }
+
+    public void Finalizar(Guid? usuarioId = null)
     {
         if (Estado != EstadoServicio.EnCurso)
         {
@@ -147,10 +180,35 @@ public sealed class ServicioVehicular : Entity
         }
 
         FinalizadoEnUtc = DateTimeOffset.UtcNow;
+        FinalizadoPorUsuarioId = usuarioId;
         Estado = EstadoServicio.Finalizado;
+        RegistrarActualizacion(usuarioId);
     }
 
-    public void Anular(string motivo)
+    public void ConfirmarConsumo(IReadOnlyDictionary<Guid, decimal> cantidadesUtilizadas, Guid? usuarioId = null)
+    {
+        if (Estado != EstadoServicio.EnCurso)
+        {
+            throw new DomainException("Solo se puede confirmar el consumo de un servicio en curso.");
+        }
+
+        ArgumentNullException.ThrowIfNull(cantidadesUtilizadas);
+        if (cantidadesUtilizadas.Keys.Any(productId => _detalles.All(detail => detail.ProductoId != productId)))
+        {
+            throw new DomainException("El consumo incluye un producto que no estaba reservado para el servicio.");
+        }
+
+        foreach (var detail in _detalles)
+        {
+            var quantity = cantidadesUtilizadas.GetValueOrDefault(detail.ProductoId);
+            detail.ConfirmarCantidadUtilizada(quantity);
+        }
+
+        _detalles.RemoveAll(detail => detail.Cantidad == 0);
+        RegistrarActualizacion(usuarioId);
+    }
+
+    public void Anular(string motivo, Guid? usuarioId = null)
     {
         if (Estado != EstadoServicio.EnCurso)
         {
@@ -159,7 +217,15 @@ public sealed class ServicioVehicular : Entity
 
         MotivoAnulacion = Normalizar(motivo, 500, "El motivo de anulacion");
         AnuladoEnUtc = DateTimeOffset.UtcNow;
+        AnuladoPorUsuarioId = usuarioId;
         Estado = EstadoServicio.Anulado;
+        RegistrarActualizacion(usuarioId);
+    }
+
+    private void RegistrarActualizacion(Guid? usuarioId)
+    {
+        ActualizadoPorUsuarioId = usuarioId;
+        ActualizadoEnUtc = DateTimeOffset.UtcNow;
     }
 
     private static string Normalizar(string? value, int maxLength, string field)

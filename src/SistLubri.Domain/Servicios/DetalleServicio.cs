@@ -97,6 +97,22 @@ public sealed class DetalleServicio : Entity
         CostoUnitario = decimal.Round(costoUnitario, 2);
     }
 
+    internal void ConfirmarCantidadUtilizada(decimal cantidad)
+    {
+        if (cantidad < 0)
+        {
+            throw new DomainException("La cantidad utilizada no puede ser negativa.");
+        }
+
+        var normalizedQuantity = decimal.Round(cantidad, 3);
+        if (normalizedQuantity > Cantidad)
+        {
+            throw new DomainException("La cantidad utilizada debe estar entre cero y la cantidad reservada.");
+        }
+
+        Cantidad = normalizedQuantity;
+    }
+
     private static string Normalizar(string? value, int maxLength, string field)
     {
         var normalized = value?.Trim();

@@ -9,6 +9,7 @@ using SistLubri.Domain.Servicios;
 using SistLubri.Domain.Vehiculos;
 using SistLubri.Domain.Ventas;
 using SistLubri.Domain.Proveedores;
+using SistLubri.Domain.Gastos;
 using SistLubri.Infrastructure.Persistence.Usuarios;
 
 namespace SistLubri.Infrastructure.Persistence;
@@ -42,6 +43,9 @@ public sealed class SistLubriDbContext(DbContextOptions<SistLubriDbContext> opti
     public DbSet<ReintegroVenta> ReintegrosVenta => Set<ReintegroVenta>();
     public DbSet<Proveedor> Proveedores => Set<Proveedor>();
     public DbSet<RegistroEstadoProveedor> RegistrosEstadoProveedor => Set<RegistroEstadoProveedor>();
+    public DbSet<Gasto> Gastos => Set<Gasto>();
+    public DbSet<PagoGasto> PagosGasto => Set<PagoGasto>();
+    public DbSet<ReintegroGasto> ReintegrosGasto => Set<ReintegroGasto>();
     public DbSet<JornadaCaja> JornadasCaja => Set<JornadaCaja>();
     public DbSet<MovimientoCaja> MovimientosCaja => Set<MovimientoCaja>();
     public DbSet<MedioPago> MediosPago => Set<MedioPago>();

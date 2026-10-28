@@ -265,6 +265,7 @@ internal sealed class FakeCajaRepository(
     params SistLubri.Domain.Caja.MedioPago[] mediosPago) : SistLubri.Application.Caja.ICajaRepository
 {
     public List<SistLubri.Domain.Caja.JornadaCaja> Jornadas { get; } = jornada is null ? [] : [jornada];
+    public List<SistLubri.Domain.Caja.MovimientoCaja> AddedMovements { get; } = [];
     public SistLubri.Domain.Caja.ConfiguracionCaja? Configuracion { get; set; }
     public Task<SistLubri.Domain.Caja.JornadaCaja?> GetActualAsync(CancellationToken cancellationToken = default) =>
         Task.FromResult(Jornadas.SingleOrDefault(day => day.Estado is SistLubri.Domain.Caja.EstadoJornadaCaja.Abierta or SistLubri.Domain.Caja.EstadoJornadaCaja.Reabierta));
@@ -288,7 +289,7 @@ internal sealed class FakeCajaRepository(
     public Task<bool> ExistsPaymentMethodNameAsync(string nombre, Guid? excludingId = null, CancellationToken cancellationToken = default) =>
         Task.FromResult(false);
     public void Add(SistLubri.Domain.Caja.JornadaCaja item) => Jornadas.Add(item);
-    public void Add(SistLubri.Domain.Caja.MovimientoCaja item) { }
+    public void Add(SistLubri.Domain.Caja.MovimientoCaja item) => AddedMovements.Add(item);
     public void Add(SistLubri.Domain.Caja.MedioPago item) { }
     public void Add(SistLubri.Domain.Caja.ConfiguracionCaja item) { }
     public void Add(SistLubri.Domain.Caja.RegistroCierreCaja item) { }

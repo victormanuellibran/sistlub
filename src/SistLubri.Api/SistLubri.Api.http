@@ -183,3 +183,84 @@ Accept: application/json
 Authorization: Bearer {{token}}
 
 ###
+
+# Gastos: una obligacion pendiente no afecta Caja hasta que se registre el pago.
+# Para asociar proveedor o pago, use IDs reales devueltos por sus endpoints.
+# @name crearGasto
+POST {{host}}/api/gastos
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "categoria": "Servicios",
+  "categoriaDetalle": null,
+  "descripcion": "Factura de electricidad",
+  "fecha": "2026-10-27",
+  "importeTotal": 125000,
+  "entidadRelacionada": "Empresa de energia",
+  "proveedorId": null,
+  "fechaVencimiento": "2026-11-10",
+  "vencimientoEstimado": false,
+  "referenciaComprobante": "FAC-001",
+  "observaciones": null,
+  "fechaPagoInicial": null,
+  "pagosIniciales": [],
+  "esCompraMercaderia": false
+}
+
+###
+
+@gastoId = {{crearGasto.response.body.$.id}}
+
+GET {{host}}/api/gastos/{{gastoId}}
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+# Copie la version del detalle para modificar un gasto sin sobrescribir cambios ajenos.
+PUT {{host}}/api/gastos/{{gastoId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "categoria": "Servicios",
+  "categoriaDetalle": null,
+  "descripcion": "Factura de electricidad actualizada",
+  "fecha": "2026-10-27",
+  "importeTotal": 125000,
+  "entidadRelacionada": "Empresa de energia",
+  "proveedorId": null,
+  "fechaVencimiento": "2026-11-10",
+  "vencimientoEstimado": false,
+  "referenciaComprobante": "FAC-001",
+  "observaciones": null,
+  "version": "PEGAR_VERSION_DEL_DETALLE"
+}
+
+###
+
+# Reemplace medioPagoId por uno existente de GET /api/caja/medios-pago.
+POST {{host}}/api/gastos/{{gastoId}}/pagos
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "fecha": "2026-10-27",
+  "pagos": [
+    {
+      "medioPagoId": "00000000-0000-0000-0000-000000000001",
+      "importe": 50000,
+      "referencia": null,
+      "observacion": null
+    }
+  ]
+}
+
+###
+
+GET {{host}}/api/gastos?situacion=ProximoAVencer
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###

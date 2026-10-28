@@ -1,4 +1,5 @@
 using SistLubri.Domain.Common;
+using SistLubri.Domain.Gastos;
 
 namespace SistLubri.Domain.Caja;
 
@@ -17,7 +18,10 @@ public sealed class MovimientoCaja : Entity
         string? referencia,
         string? motivo,
         bool afectaEfectivo,
-        Guid? pagoVentaId = null)
+        Guid? pagoVentaId = null,
+        Guid? gastoId = null,
+        Guid? pagoGastoId = null,
+        Guid? reintegroGastoId = null)
     {
         if (jornadaCajaId == Guid.Empty || usuarioId == Guid.Empty || importe <= 0)
         {
@@ -33,6 +37,9 @@ public sealed class MovimientoCaja : Entity
         MedioPagoId = medioPagoId;
         VentaId = ventaId;
         PagoVentaId = pagoVentaId;
+        GastoId = gastoId;
+        PagoGastoId = pagoGastoId;
+        ReintegroGastoId = reintegroGastoId;
         Referencia = Normalizar(referencia, 120);
         Motivo = Normalizar(motivo, 500);
         FechaUtc = DateTimeOffset.UtcNow;
@@ -48,6 +55,11 @@ public sealed class MovimientoCaja : Entity
     public Guid? MedioPagoId { get; private init; }
     public Guid? VentaId { get; private init; }
     public Guid? PagoVentaId { get; private init; }
+    public Guid? GastoId { get; private init; }
+    public Guid? PagoGastoId { get; private init; }
+    public Guid? ReintegroGastoId { get; private init; }
+    public PagoGasto? PagoGasto { get; private set; }
+    public ReintegroGasto? ReintegroGasto { get; private set; }
     public string? Referencia { get; private init; }
     public string? Motivo { get; private init; }
     public DateTimeOffset FechaUtc { get; private init; }

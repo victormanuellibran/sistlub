@@ -140,7 +140,7 @@ public sealed class CajaService(ICajaRepository repository, IUnitOfWork unitOfWo
     public async Task<JornadaCajaDto> RegisterMovementAsync(MovimientoCajaCommand command, CancellationToken cancellationToken = default)
     {
         if (command.Tipo is not (TipoMovimientoCaja.IngresoManual or TipoMovimientoCaja.EgresoManual or TipoMovimientoCaja.RetiroEfectivo or TipoMovimientoCaja.Ajuste))
-            throw new Domain.Common.DomainException("Los cobros, anulaciones y reintegros se registran desde el modulo de ventas, no como movimientos manuales de caja.");
+            throw new Domain.Common.DomainException("Los cobros, pagos de gastos, anulaciones y reintegros se registran desde sus modulos, no como movimientos manuales de caja.");
 
         await using var transaction = await unitOfWork.BeginTransactionAsync(cancellationToken);
         var day = await repository.GetActualAsync(cancellationToken) ?? throw new ConflictException("No hay una jornada de caja abierta.");
@@ -212,6 +212,7 @@ public sealed class CajaService(ICajaRepository repository, IUnitOfWork unitOfWo
         day.ObservacionVerificacion, day.ReabiertaEnUtc, day.ReabiertaPorUsuarioId,
         day.MotivoReapertura, day.NumeroReaperturas,
         day.Movimientos.Select(m => new MovimientoCajaDto(m.Id, m.Tipo, m.EsIngreso, m.Importe,
-            m.UsuarioId, m.MedioPagoId, m.VentaId, m.Referencia, m.Motivo, m.FechaUtc, m.AfectaEfectivo)).ToArray());
+            m.UsuarioId, m.MedioPagoId, m.VentaId, m.Referencia, m.Motivo, m.FechaUtc, m.AfectaEfectivo,
+            m.GastoId, m.PagoGastoId, m.ReintegroGastoId)).ToArray());
 }
 

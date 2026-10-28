@@ -8,5 +8,7 @@ public enum TipoMovimientoCaja
     RetiroEfectivo = 4,
     Ajuste = 5,
     AnulacionVenta = 6,
-    ReintegroVenta = 7
+    ReintegroVenta = 7,
+    EgresoGasto = 8,
+    ReintegroGasto = 9
 }

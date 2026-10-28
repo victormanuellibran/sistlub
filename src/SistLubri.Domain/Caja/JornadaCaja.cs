@@ -7,7 +7,6 @@ public sealed class JornadaCaja : Entity
     private readonly List<MovimientoCaja> _movimientos = [];
     private readonly List<RegistroCierreCaja> _cierres = [];
     private readonly List<RegistroAperturaCaja> _aperturas = [];
-    private decimal _saldoInicialActual;
 
     private JornadaCaja() { }
 
@@ -21,7 +20,6 @@ public sealed class JornadaCaja : Entity
         if (jornadaId.HasValue) Id = jornadaId.Value;
         Fecha = fecha;
         SaldoInicial = decimal.Round(saldoInicial, 2);
-        _saldoInicialActual = SaldoInicial;
         Estado = EstadoJornadaCaja.Abierta;
         AbiertaEnUtc = DateTimeOffset.UtcNow;
         AbiertaPorUsuarioId = usuarioId;
@@ -32,6 +30,7 @@ public sealed class JornadaCaja : Entity
     public decimal SaldoInicial { get; private init; }
     public EstadoJornadaCaja Estado { get; private set; }
     public DateTimeOffset AbiertaEnUtc { get; private init; }
+    public DateTimeOffset? ActualizadaEnUtc { get; private set; }
     public Guid AbiertaPorUsuarioId { get; private init; }
     public DateTimeOffset? CerradaEnUtc { get; private set; }
     public Guid? CerradaPorUsuarioId { get; private set; }
@@ -43,9 +42,19 @@ public sealed class JornadaCaja : Entity
     public decimal TotalIngresos => decimal.Round(_movimientos.Where(m => m.EsIngreso).Sum(m => m.Importe), 2);
     public decimal TotalEgresos => decimal.Round(_movimientos.Where(m => !m.EsIngreso).Sum(m => m.Importe), 2);
     public decimal SaldoEsperado => decimal.Round(SaldoInicial + TotalIngresos - TotalEgresos, 2);
-    public decimal EfectivoEsperado => decimal.Round(_saldoInicialActual +
-        _movimientos.Where(m => m.AfectaEfectivo && m.EsIngreso).Sum(m => m.Importe) -
-        _movimientos.Where(m => m.AfectaEfectivo && !m.EsIngreso).Sum(m => m.Importe), 2);
+    public decimal EfectivoEsperado
+    {
+        get
+        {
+            var ultimaApertura = _aperturas.OrderByDescending(apertura => apertura.Numero).FirstOrDefault();
+            var fechaApertura = ultimaApertura?.FechaUtc ?? AbiertaEnUtc;
+            var saldoApertura = ultimaApertura?.SaldoInicial ?? SaldoInicial;
+            var movimientosDesdeApertura = _movimientos.Where(movement => movement.FechaUtc > fechaApertura && movement.AfectaEfectivo);
+            return decimal.Round(saldoApertura +
+                movimientosDesdeApertura.Where(movement => movement.EsIngreso).Sum(movement => movement.Importe) -
+                movimientosDesdeApertura.Where(movement => !movement.EsIngreso).Sum(movement => movement.Importe), 2);
+        }
+    }
     public IReadOnlyCollection<MovimientoCaja> Movimientos => _movimientos.AsReadOnly();
     public IReadOnlyCollection<RegistroCierreCaja> Cierres => _cierres.AsReadOnly();
     public IReadOnlyCollection<RegistroAperturaCaja> Aperturas => _aperturas.AsReadOnly();
@@ -89,15 +98,23 @@ public sealed class JornadaCaja : Entity
         Guid? ventaId = null,
         string? referencia = null,
         string? motivo = null,
-        bool afectaEfectivo = true)
+        bool afectaEfectivo = true,
+        Guid? gastoId = null,
+        Guid? pagoGastoId = null,
+        Guid? reintegroGastoId = null)
     {
         ValidarAbierta(usuarioId);
+        var esEgresoGasto = tipo == TipoMovimientoCaja.EgresoGasto;
+        var esReintegroGasto = tipo == TipoMovimientoCaja.ReintegroGasto;
         if (!Enum.IsDefined(tipo) || importe <= 0 ||
             ((tipo is TipoMovimientoCaja.CobroVenta or TipoMovimientoCaja.IngresoManual) && !esIngreso) ||
             ((tipo is TipoMovimientoCaja.EgresoManual or TipoMovimientoCaja.RetiroEfectivo) && esIngreso) ||
             (tipo == TipoMovimientoCaja.CobroVenta && (!medioPagoId.HasValue || !ventaId.HasValue)) ||
             (tipo != TipoMovimientoCaja.CobroVenta && tipo is not (TipoMovimientoCaja.AnulacionVenta or TipoMovimientoCaja.ReintegroVenta) && ventaId.HasValue) ||
-            (tipo == TipoMovimientoCaja.CobroVenta && !medioPagoId.HasValue))
+            (tipo == TipoMovimientoCaja.CobroVenta && !medioPagoId.HasValue) ||
+            (esEgresoGasto && (esIngreso || !medioPagoId.HasValue || !gastoId.HasValue || !pagoGastoId.HasValue || reintegroGastoId.HasValue)) ||
+            (esReintegroGasto && (!esIngreso || !medioPagoId.HasValue || !gastoId.HasValue || !reintegroGastoId.HasValue || pagoGastoId.HasValue)) ||
+            (!esEgresoGasto && !esReintegroGasto && (gastoId.HasValue || pagoGastoId.HasValue || reintegroGastoId.HasValue)))
         {
             throw new DomainException("El movimiento de caja no es valido o le faltan referencias requeridas.");
         }
@@ -106,8 +123,10 @@ public sealed class JornadaCaja : Entity
             throw new DomainException("El egreso supera el efectivo disponible en la caja.");
 
         var movimiento = new MovimientoCaja(
-            Id, tipo, esIngreso, importe, usuarioId, medioPagoId, ventaId, referencia, motivo, afectaEfectivo);
+            Id, tipo, esIngreso, importe, usuarioId, medioPagoId, ventaId, referencia, motivo, afectaEfectivo,
+            gastoId: gastoId, pagoGastoId: pagoGastoId, reintegroGastoId: reintegroGastoId);
         _movimientos.Add(movimiento);
+        ActualizadaEnUtc = DateTimeOffset.UtcNow;
         return movimiento;
     }
 
@@ -166,8 +185,8 @@ public sealed class JornadaCaja : Entity
         ReabiertaPorUsuarioId = usuarioId;
         NumeroReaperturas++;
         _cierres[^1].RegistrarReapertura(MotivoReapertura, ReabiertaEnUtc.Value, usuarioId);
-        _saldoInicialActual = SaldoContado ?? EfectivoEsperado;
-        var apertura = new RegistroAperturaCaja(Id, NumeroReaperturas + 1, ReabiertaEnUtc.Value, usuarioId, _saldoInicialActual);
+        var saldoReapertura = SaldoContado ?? EfectivoEsperado;
+        var apertura = new RegistroAperturaCaja(Id, NumeroReaperturas + 1, ReabiertaEnUtc.Value, usuarioId, saldoReapertura);
         _aperturas.Add(apertura);
         Estado = EstadoJornadaCaja.Reabierta;
     }

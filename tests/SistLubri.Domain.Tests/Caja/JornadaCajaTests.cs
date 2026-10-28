@@ -1,5 +1,6 @@
 using SistLubri.Domain.Caja;
 using SistLubri.Domain.Common;
+using System.Reflection;
 
 namespace SistLubri.Domain.Tests.Caja;
 
@@ -43,6 +44,25 @@ public sealed class JornadaCajaTests
 
         Assert.Equal(id, jornada.Id);
         Assert.Equal(id, Assert.Single(jornada.Aperturas).JornadaCajaId);
+    }
+
+    [Fact]
+    public void EfectivoEsperado_SeReconstruyeDesdeLaAperturaPersistida()
+    {
+        var jornada = JornadaCaja.Abrir(DateOnly.FromDateTime(DateTime.Today), 700_000, UserId);
+        var apertura = Assert.Single(jornada.Aperturas);
+        var rehidratada = (JornadaCaja)Activator.CreateInstance(typeof(JornadaCaja), nonPublic: true)!;
+
+        typeof(JornadaCaja).GetProperty(nameof(JornadaCaja.SaldoInicial))!
+            .SetValue(rehidratada, jornada.SaldoInicial);
+        typeof(JornadaCaja).GetProperty(nameof(JornadaCaja.AbiertaEnUtc))!
+            .SetValue(rehidratada, jornada.AbiertaEnUtc);
+        var aperturas = (List<RegistroAperturaCaja>)typeof(JornadaCaja)
+            .GetField("_aperturas", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .GetValue(rehidratada)!;
+        aperturas.Add(apertura);
+
+        Assert.Equal(700_000, rehidratada.EfectivoEsperado);
     }
 
     [Fact]

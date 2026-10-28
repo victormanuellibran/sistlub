@@ -12,6 +12,7 @@ internal sealed class JornadaCajaConfiguration : IEntityTypeConfiguration<Jornad
         builder.HasKey(jornada => jornada.Id);
         builder.Property(jornada => jornada.Estado).HasConversion<string>().HasMaxLength(20);
         builder.Property(jornada => jornada.SaldoInicial).HasPrecision(18, 2);
+        builder.Property<byte[]>("RowVersion").IsRowVersion().IsRequired();
         builder.Property(jornada => jornada.SaldoContado).HasPrecision(18, 2);
         builder.Property(jornada => jornada.DiferenciaVerificacion).HasPrecision(18, 2);
         builder.Property(jornada => jornada.ObservacionVerificacion).HasMaxLength(500);
@@ -50,6 +51,10 @@ internal sealed class MovimientoCajaConfiguration : IEntityTypeConfiguration<Mov
         builder.HasIndex(movement => movement.VentaId);
         builder.HasIndex(movement => movement.MedioPagoId);
         builder.HasIndex(movement => movement.PagoVentaId).IsUnique().HasFilter("[PagoVentaId] IS NOT NULL");
+        builder.HasIndex(movement => movement.PagoGastoId).IsUnique().HasFilter("[PagoGastoId] IS NOT NULL");
+        builder.HasIndex(movement => movement.ReintegroGastoId).IsUnique().HasFilter("[ReintegroGastoId] IS NOT NULL");
+        builder.HasOne<SistLubri.Domain.Gastos.Gasto>().WithMany().HasForeignKey(movement => movement.GastoId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }
 

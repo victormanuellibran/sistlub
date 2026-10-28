@@ -44,7 +44,7 @@ Swagger queda disponible en `/swagger`, OpenAPI en `/openapi/v1.json` y el estad
 
 ## Modulos disponibles
 
-Los cortes verticales disponibles implementan Clientes, Vehiculos, Productos, Inventario, Servicios vehiculares, Ventas, Caja y el registro maestro de Proveedores:
+Los cortes verticales disponibles implementan Clientes, Vehiculos, Productos, Inventario, Servicios vehiculares, Ventas, Caja, Proveedores y Gastos:
 
 - alta, busqueda, consulta y modificacion de clientes;
 - desactivacion y reactivacion sin eliminar informacion historica;
@@ -63,8 +63,9 @@ Los cortes verticales disponibles implementan Clientes, Vehiculos, Productos, In
 - anulaciones con reverso de caja, devoluciones parciales acumulativas y reingreso de productos solo cuando corresponde;
 - jornadas de caja manuales o automaticas, ingresos/egresos, retiros, arqueo, verificacion, reapertura auditada y configuracion de medios de pago.
 - alta, consulta, modificacion y desactivacion/reactivacion de proveedores, con CUIT unico, aviso de posibles duplicados e historial de estado auditable.
+- registro de gastos pendientes, parciales o pagados, vencimientos, pagos combinados vinculados a Caja, consulta con filtros, modificacion con control de concurrencia y anulacion con reintegros auditables.
 
-El estado de cuenta del proveedor y los modulos de Compras y Gastos siguen pendientes; no se calculan saldos ni obligaciones desde el registro maestro de proveedores.
+El estado de cuenta del proveedor y el modulo de Compras siguen pendientes; los gastos pueden vincularse opcionalmente a un proveedor, pero no constituyen todavia un estado de cuenta integral ni registran compras de mercaderia.
 
 ## Caja: comportamiento actual y reglas acordadas
 

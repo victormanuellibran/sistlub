@@ -49,8 +49,8 @@ internal sealed class ProductoRepository(SistLubriDbContext dbContext) : IProduc
             .AsNoTracking()
             .Where(producto =>
                 producto.Activo &&
-                (producto.StockActual <= 0 ||
-                    (producto.StockMinimo > 0 && producto.StockActual <= producto.StockMinimo)))
+                (producto.StockActual - producto.StockReservado <= 0 ||
+                    (producto.StockMinimo > 0 && producto.StockActual - producto.StockReservado <= producto.StockMinimo)))
             .OrderBy(producto => producto.StockActual > 0)
             .ThenBy(producto => producto.Nombre)
             .ToListAsync(cancellationToken);

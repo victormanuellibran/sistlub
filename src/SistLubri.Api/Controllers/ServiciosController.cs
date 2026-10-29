@@ -43,6 +43,11 @@ public sealed class ServiciosController(ServicioVehicularService servicioService
         return Ok(await servicioService.GetByIdAsync(id, cancellationToken));
     }
 
+    [HttpGet("en-curso")]
+    [ProducesResponseType<IReadOnlyList<ServicioVehicularDto>>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<ServicioVehicularDto>>> GetInProgress(CancellationToken cancellationToken) =>
+        Ok(await servicioService.GetInProgressAsync(cancellationToken));
+
     [HttpPut("{id:guid}/detalles")]
     [ProducesResponseType<ServicioVehicularDto>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -55,8 +60,12 @@ public sealed class ServiciosController(ServicioVehicularService servicioService
     {
         return Ok(await servicioService.UpdateDetailsAsync(
             id,
-            (request.Detalles ?? []).Select(detalle =>
-                new CrearDetalleServicioCommand(detalle.ProductoId, detalle.Cantidad)).ToArray(),
+            new ActualizarServicioVehicularCommand(
+                (request.Detalles ?? []).Select(detalle =>
+                    new CrearDetalleServicioCommand(detalle.ProductoId, detalle.Cantidad)).ToArray(),
+                request.TrabajoSolicitado,
+                request.Observaciones,
+                request.ManoObra),
             cancellationToken));
     }
 
@@ -82,8 +91,11 @@ public sealed class ServiciosController(ServicioVehicularService servicioService
     {
         return Ok(await servicioService.FinalizeAsync(
             id,
-            request.KilometrajeFinal,
-            request.ProximoCambioKilometraje,
+            new CerrarServicioVehicularCommand(
+                request.ProductosUtilizados.Select(item =>
+                    new ConfirmarConsumoServicioCommand(item.ProductoId, item.CantidadUtilizada)).ToArray(),
+                request.KilometrajeFinal,
+                request.ProximoCambioKilometraje),
             cancellationToken));
     }
 
@@ -96,6 +108,12 @@ public sealed class ServiciosController(ServicioVehicularService servicioService
         AnularServicioRequest request,
         CancellationToken cancellationToken)
     {
-        return Ok(await servicioService.CancelAsync(id, request.Motivo, cancellationToken));
+        return Ok(await servicioService.CancelAsync(
+            id,
+            new CerrarServicioVehicularCommand(
+                request.ProductosUtilizados.Select(item =>
+                    new ConfirmarConsumoServicioCommand(item.ProductoId, item.CantidadUtilizada)).ToArray(),
+                MotivoAnulacion: request.Motivo),
+            cancellationToken));
     }
 }

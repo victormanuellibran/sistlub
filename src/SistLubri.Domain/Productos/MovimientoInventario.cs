@@ -15,7 +15,8 @@ public sealed class MovimientoInventario : Entity
         decimal stockAnterior,
         decimal stockResultante,
         string motivo,
-        Guid? referenciaId)
+        Guid? referenciaId,
+        Guid? usuarioId)
     {
         ProductoId = productoId;
         Tipo = tipo;
@@ -24,6 +25,7 @@ public sealed class MovimientoInventario : Entity
         StockResultante = stockResultante;
         Motivo = motivo;
         ReferenciaId = referenciaId;
+        UsuarioId = usuarioId;
         FechaUtc = DateTimeOffset.UtcNow;
     }
 
@@ -42,6 +44,8 @@ public sealed class MovimientoInventario : Entity
     public string Motivo { get; private init; } = string.Empty;
 
     public Guid? ReferenciaId { get; private init; }
+
+    public Guid? UsuarioId { get; private init; }
 
     public DateTimeOffset FechaUtc { get; private init; }
 }

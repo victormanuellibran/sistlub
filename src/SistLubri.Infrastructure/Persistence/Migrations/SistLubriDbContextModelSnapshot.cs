@@ -22,6 +22,461 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex")
+                        .HasFilter("[NormalizedName] IS NOT NULL");
+
+                    b.ToTable("AspNetRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetRoleClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ClaimType")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ClaimValue")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserClaims", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
+                {
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderKey")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ProviderDisplayName")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("LoginProvider", "ProviderKey");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("AspNetUserLogins", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("RoleId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("AspNetUserRoles", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
+                {
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("LoginProvider")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("Value")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UserId", "LoginProvider", "Name");
+
+                    b.ToTable("AspNetUserTokens", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Caja.ConfiguracionCaja", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("ActualizadaEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<bool>("AperturaAutomatica")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("CierreAutomatico")
+                        .HasColumnType("bit");
+
+                    b.Property<TimeSpan?>("DuracionJornada")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("HoraApertura")
+                        .HasColumnType("time");
+
+                    b.Property<TimeOnly>("HoraCierre")
+                        .HasColumnType("time");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Id")
+                        .IsUnique();
+
+                    b.ToTable("ConfiguracionCaja", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Caja.JornadaCaja", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("AbiertaEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("AbiertaPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("ActualizadaEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateTimeOffset?>("CerradaEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("CerradaPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("DiferenciaVerificacion")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<string>("MotivoReapertura")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("NumeroCierres")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NumeroReaperturas")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ObservacionVerificacion")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<DateTimeOffset?>("ReabiertaEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("ReabiertaPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<decimal?>("SaldoContado")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("SaldoInicial")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTimeOffset?>("VerificadaEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("VerificadaPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Fecha")
+                        .IsUnique();
+
+                    b.ToTable("JornadasCaja", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Caja.MedioPago", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("AfectaEfectivo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<bool>("RequiereReferencia")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
+                    b.ToTable("MediosPago", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Caja.MovimientoCaja", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("AfectaEfectivo")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("EsIngreso")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset>("FechaUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("GastoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Importe")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("JornadaCajaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("MedioPagoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Motivo")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid?>("PagoGastoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("PagoVentaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Referencia")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<Guid?>("ReintegroGastoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("VentaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FechaUtc");
+
+                    b.HasIndex("GastoId");
+
+                    b.HasIndex("JornadaCajaId");
+
+                    b.HasIndex("MedioPagoId");
+
+                    b.HasIndex("PagoGastoId")
+                        .IsUnique()
+                        .HasFilter("[PagoGastoId] IS NOT NULL");
+
+                    b.HasIndex("PagoVentaId")
+                        .IsUnique()
+                        .HasFilter("[PagoVentaId] IS NOT NULL");
+
+                    b.HasIndex("ReintegroGastoId")
+                        .IsUnique()
+                        .HasFilter("[ReintegroGastoId] IS NOT NULL");
+
+                    b.HasIndex("VentaId");
+
+                    b.ToTable("MovimientosCaja", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Caja.RegistroAperturaCaja", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("FechaUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("JornadaCajaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Numero")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("SaldoInicial")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("JornadaCajaId", "Numero")
+                        .IsUnique();
+
+                    b.ToTable("RegistrosAperturaCaja", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Caja.RegistroCierreCaja", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CerradoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CerradoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal?>("Diferencia")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal?>("EfectivoContado")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("EfectivoEsperado")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("JornadaCajaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("MotivoReapertura")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("Numero")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Observacion")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid?>("ProximoCierreId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("ReabiertoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("ReabiertoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("VerificadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("VerificadoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProximoCierreId")
+                        .IsUnique()
+                        .HasFilter("[ProximoCierreId] IS NOT NULL");
+
+                    b.HasIndex("JornadaCajaId", "Numero")
+                        .IsUnique();
+
+                    b.ToTable("RegistrosCierreCaja", (string)null);
+                });
+
             modelBuilder.Entity("SistLubri.Domain.Clientes.Cliente", b =>
                 {
                     b.Property<Guid>("Id")
@@ -84,6 +539,184 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.ToTable("Clientes", (string)null);
                 });
 
+            modelBuilder.Entity("SistLubri.Domain.Gastos.Gasto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("ActualizadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ActualizadoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("AnuladoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("AnuladoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Categoria")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("CategoriaDetalle")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<DateTimeOffset>("CreadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreadoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("EntidadRelacionada")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("FechaVencimiento")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("ImporteTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("MotivoAnulacion")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid?>("ProveedorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ReferenciaComprobante")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<bool>("VencimientoEstimado")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Categoria");
+
+                    b.HasIndex("CreadoPorUsuarioId");
+
+                    b.HasIndex("Estado");
+
+                    b.HasIndex("Fecha");
+
+                    b.HasIndex("FechaVencimiento");
+
+                    b.HasIndex("ProveedorId");
+
+                    b.ToTable("Gastos", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Gastos.PagoGasto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("GastoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Importe")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("MedioPagoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Observacion")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Referencia")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GastoId", "Fecha");
+
+                    b.ToTable("PagosGasto", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Gastos.ReintegroGasto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("GastoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Importe")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("MedioPagoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Observacion")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Referencia")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GastoId", "Fecha");
+
+                    b.ToTable("ReintegrosGasto", (string)null);
+                });
+
             modelBuilder.Entity("SistLubri.Domain.Productos.MovimientoInventario", b =>
                 {
                     b.Property<Guid>("Id")
@@ -121,6 +754,9 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
 
+                    b.Property<Guid?>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.HasKey("Id");
 
                     b.HasIndex("FechaUtc");
@@ -130,6 +766,8 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.HasIndex("ReferenciaId");
 
                     b.HasIndex("Tipo");
+
+                    b.HasIndex("UsuarioId");
 
                     b.ToTable("MovimientosInventario", (string)null);
                 });
@@ -196,6 +834,10 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                         .HasPrecision(18, 3)
                         .HasColumnType("decimal(18,3)");
 
+                    b.Property<decimal>("StockReservado")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
                     b.Property<string>("UnidadMedida")
                         .IsRequired()
                         .HasMaxLength(20)
@@ -213,6 +855,123 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.HasIndex("Nombre");
 
                     b.ToTable("Productos", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Proveedores.Proveedor", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("ActualizadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("ActualizadoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CondicionPagoHabitual")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("ContactoNombre")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<DateTimeOffset>("CreadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreadoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Cuit")
+                        .HasMaxLength(11)
+                        .HasColumnType("nvarchar(11)");
+
+                    b.Property<string>("Direccion")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(254)
+                        .HasColumnType("nvarchar(254)");
+
+                    b.Property<string>("MarcasYProductos")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("PeriodoPagoHabitual")
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<int?>("PlazoPagoHabitualDias")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RazonSocial")
+                        .IsRequired()
+                        .HasMaxLength(160)
+                        .HasColumnType("nvarchar(160)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Activo");
+
+                    b.HasIndex("Cuit")
+                        .IsUnique()
+                        .HasFilter("[Cuit] IS NOT NULL");
+
+                    b.HasIndex("RazonSocial");
+
+                    b.HasIndex("Telefono");
+
+                    b.ToTable("Proveedores", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Proveedores.RegistroEstadoProveedor", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTimeOffset>("FechaUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Motivo")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("ProveedorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProveedorId", "FechaUtc");
+
+                    b.ToTable("RegistrosEstadoProveedor", (string)null);
                 });
 
             modelBuilder.Entity("SistLubri.Domain.Servicios.DetalleServicio", b =>
@@ -252,8 +1011,10 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("ServicioVehicularId")
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<int>("UnidadMedida")
-                        .HasColumnType("int");
+                    b.Property<string>("UnidadMedida")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.HasKey("Id");
 
@@ -271,8 +1032,17 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTimeOffset?>("ActualizadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("ActualizadoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTimeOffset?>("AnuladoEnUtc")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("AnuladoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ClienteId")
                         .HasColumnType("uniqueidentifier");
@@ -285,6 +1055,9 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("CreadoEnUtc")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<Guid?>("CreadoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<string>("DanosExistentes")
                         .HasMaxLength(2000)
                         .HasColumnType("nvarchar(2000)");
@@ -296,6 +1069,9 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
 
                     b.Property<DateTimeOffset?>("FinalizadoEnUtc")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("FinalizadoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("InspeccionPrevia")
                         .HasMaxLength(2000)
@@ -321,6 +1097,11 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
                     b.Property<string>("TrabajoSolicitado")
                         .IsRequired()
                         .HasMaxLength(500)
@@ -334,6 +1115,8 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.HasIndex("ClienteId");
 
                     b.HasIndex("CreadoEnUtc");
+
+                    b.HasIndex("Estado");
 
                     b.HasIndex("Patente");
 
@@ -400,6 +1183,504 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.ToTable("Vehiculos", (string)null);
                 });
 
+            modelBuilder.Entity("SistLubri.Domain.Ventas.DetalleVenta", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Cantidad")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<decimal>("CantidadDevuelta")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<string>("CodigoProducto")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<decimal>("Descuento")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("EsDetalleTecnico")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("EsFraccionado")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("NombreProducto")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<decimal>("PrecioUnitario")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Presentacion")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<Guid>("ProductoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("UnidadMedida")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("VentaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductoId");
+
+                    b.HasIndex("VentaId");
+
+                    b.ToTable("DetallesVenta", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Ventas.PagoVenta", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("AfectaEfectivo")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("EsAnulacion")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("EsReintegro")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset>("FechaUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("Importe")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("MedioPagoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("MovimientoCajaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("NombreMedioPago")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("nvarchar(60)");
+
+                    b.Property<string>("Observacion")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Referencia")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("TipoOperacion")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("VentaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedioPagoId");
+
+                    b.HasIndex("MovimientoCajaId")
+                        .IsUnique()
+                        .HasFilter("[MovimientoCajaId] IS NOT NULL");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.HasIndex("VentaId");
+
+                    b.ToTable("PagosVenta", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Ventas.ReintegroVenta", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<bool>("AfectaEfectivo")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("EsAnulacion")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset>("FechaUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<decimal>("Importe")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("MedioPagoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("MovimientoCajaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("NombreMedioPago")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("nvarchar(80)");
+
+                    b.Property<string>("Observacion")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Referencia")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("VentaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedioPagoId");
+
+                    b.HasIndex("MovimientoCajaId")
+                        .IsUnique()
+                        .HasFilter("[MovimientoCajaId] IS NOT NULL");
+
+                    b.HasIndex("UsuarioId");
+
+                    b.HasIndex("VentaId");
+
+                    b.ToTable("ReintegrosVenta", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Ventas.Venta", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("ActualizadaEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ActualizadaPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("AnuladaEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("AnuladaPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ClienteId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ClienteNombre")
+                        .HasMaxLength(201)
+                        .HasColumnType("nvarchar(201)");
+
+                    b.Property<DateTimeOffset>("CreadaEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreadaPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("DescuentoGeneral")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTimeOffset?>("DevueltaEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("DevueltaPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<decimal>("ImporteManoObra")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<bool>("InventarioDescontado")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("MotivoAnulacion")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("MotivoDevolucion")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Origen")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateTimeOffset?>("PagadaEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("PagadaPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Patente")
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
+
+                    b.Property<string>("ReferenciaFacturaExterna")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<Guid?>("ServicioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClienteId");
+
+                    b.HasIndex("CreadaEnUtc");
+
+                    b.HasIndex("ServicioId")
+                        .IsUnique()
+                        .HasFilter("[ServicioId] IS NOT NULL");
+
+                    b.ToTable("Ventas", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Infrastructure.Persistence.Usuarios.UsuarioSistema", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("AccessFailedCount")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTimeOffset>("CreadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<bool>("EmailConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("LockoutEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTimeOffset?>("LockoutEnd")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("NombreCompleto")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("NormalizedEmail")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("NormalizedUserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<string>("PasswordHash")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("PhoneNumber")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("PhoneNumberConfirmed")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("SecurityStamp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("TwoFactorEnabled")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("UserName")
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Activo");
+
+                    b.HasIndex("NormalizedEmail")
+                        .HasDatabaseName("EmailIndex");
+
+                    b.HasIndex("NormalizedUserName")
+                        .IsUnique()
+                        .HasDatabaseName("UserNameIndex")
+                        .HasFilter("[NormalizedUserName] IS NOT NULL");
+
+                    b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<System.Guid>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<System.Guid>", b =>
+                {
+                    b.HasOne("SistLubri.Infrastructure.Persistence.Usuarios.UsuarioSistema", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<System.Guid>", b =>
+                {
+                    b.HasOne("SistLubri.Infrastructure.Persistence.Usuarios.UsuarioSistema", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<System.Guid>", b =>
+                {
+                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<System.Guid>", null)
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SistLubri.Infrastructure.Persistence.Usuarios.UsuarioSistema", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<System.Guid>", b =>
+                {
+                    b.HasOne("SistLubri.Infrastructure.Persistence.Usuarios.UsuarioSistema", null)
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Caja.MovimientoCaja", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Gastos.Gasto", null)
+                        .WithMany()
+                        .HasForeignKey("GastoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SistLubri.Domain.Caja.JornadaCaja", "JornadaCaja")
+                        .WithMany("Movimientos")
+                        .HasForeignKey("JornadaCajaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistLubri.Domain.Gastos.PagoGasto", "PagoGasto")
+                        .WithOne("MovimientoCaja")
+                        .HasForeignKey("SistLubri.Domain.Caja.MovimientoCaja", "PagoGastoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SistLubri.Domain.Gastos.ReintegroGasto", "ReintegroGasto")
+                        .WithOne("MovimientoCaja")
+                        .HasForeignKey("SistLubri.Domain.Caja.MovimientoCaja", "ReintegroGastoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("JornadaCaja");
+
+                    b.Navigation("PagoGasto");
+
+                    b.Navigation("ReintegroGasto");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Caja.RegistroAperturaCaja", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Caja.JornadaCaja", "JornadaCaja")
+                        .WithMany("Aperturas")
+                        .HasForeignKey("JornadaCajaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("JornadaCaja");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Caja.RegistroCierreCaja", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Caja.JornadaCaja", "JornadaCaja")
+                        .WithMany("Cierres")
+                        .HasForeignKey("JornadaCajaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("JornadaCaja");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Gastos.Gasto", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Proveedores.Proveedor", "Proveedor")
+                        .WithMany()
+                        .HasForeignKey("ProveedorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Proveedor");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Gastos.PagoGasto", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Gastos.Gasto", null)
+                        .WithMany("Pagos")
+                        .HasForeignKey("GastoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Gastos.ReintegroGasto", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Gastos.Gasto", null)
+                        .WithMany("Reintegros")
+                        .HasForeignKey("GastoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("SistLubri.Domain.Productos.MovimientoInventario", b =>
                 {
                     b.HasOne("SistLubri.Domain.Productos.Producto", "Producto")
@@ -409,6 +1690,17 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("Producto");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Proveedores.RegistroEstadoProveedor", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Proveedores.Proveedor", "Proveedor")
+                        .WithMany("HistorialEstados")
+                        .HasForeignKey("ProveedorId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Proveedor");
                 });
 
             modelBuilder.Entity("SistLubri.Domain.Servicios.DetalleServicio", b =>
@@ -454,14 +1746,106 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.Navigation("Cliente");
                 });
 
+            modelBuilder.Entity("SistLubri.Domain.Ventas.DetalleVenta", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Productos.Producto", null)
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistLubri.Domain.Ventas.Venta", "Venta")
+                        .WithMany("Detalles")
+                        .HasForeignKey("VentaId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Venta");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Ventas.PagoVenta", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Ventas.Venta", "Venta")
+                        .WithMany("Pagos")
+                        .HasForeignKey("VentaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Venta");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Ventas.ReintegroVenta", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Ventas.Venta", "Venta")
+                        .WithMany("Reintegros")
+                        .HasForeignKey("VentaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Venta");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Ventas.Venta", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Clientes.Cliente", null)
+                        .WithMany()
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SistLubri.Domain.Servicios.ServicioVehicular", null)
+                        .WithMany()
+                        .HasForeignKey("ServicioId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Caja.JornadaCaja", b =>
+                {
+                    b.Navigation("Aperturas");
+
+                    b.Navigation("Cierres");
+
+                    b.Navigation("Movimientos");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Gastos.Gasto", b =>
+                {
+                    b.Navigation("Pagos");
+
+                    b.Navigation("Reintegros");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Gastos.PagoGasto", b =>
+                {
+                    b.Navigation("MovimientoCaja");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Gastos.ReintegroGasto", b =>
+                {
+                    b.Navigation("MovimientoCaja");
+                });
+
             modelBuilder.Entity("SistLubri.Domain.Productos.Producto", b =>
                 {
                     b.Navigation("Movimientos");
                 });
 
+            modelBuilder.Entity("SistLubri.Domain.Proveedores.Proveedor", b =>
+                {
+                    b.Navigation("HistorialEstados");
+                });
+
             modelBuilder.Entity("SistLubri.Domain.Servicios.ServicioVehicular", b =>
                 {
                     b.Navigation("Detalles");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Ventas.Venta", b =>
+                {
+                    b.Navigation("Detalles");
+
+                    b.Navigation("Pagos");
+
+                    b.Navigation("Reintegros");
                 });
 #pragma warning restore 612, 618
         }

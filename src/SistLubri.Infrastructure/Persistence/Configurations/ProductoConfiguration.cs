@@ -20,9 +20,11 @@ internal sealed class ProductoConfiguration : IEntityTypeConfiguration<Producto>
         builder.Property(producto => producto.PrecioVenta).HasPrecision(18, 2);
         builder.Property(producto => producto.CostoCompra).HasPrecision(18, 2);
         builder.Property(producto => producto.StockActual).HasPrecision(18, 3);
+        builder.Property(producto => producto.StockReservado).HasPrecision(18, 3);
         builder.Property(producto => producto.StockMinimo).HasPrecision(18, 3);
 
         builder.Ignore(producto => producto.EstadoInventario);
+        builder.Ignore(producto => producto.StockDisponible);
 
         builder.HasIndex(producto => producto.Codigo).IsUnique();
         builder.HasIndex(producto => producto.Nombre);

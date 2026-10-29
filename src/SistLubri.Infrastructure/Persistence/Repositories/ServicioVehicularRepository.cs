@@ -26,6 +26,17 @@ internal sealed class ServicioVehicularRepository(SistLubriDbContext dbContext) 
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<ServicioVehicular>> GetInProgressAsync(CancellationToken cancellationToken = default)
+    {
+        return await dbContext.ServiciosVehiculares
+            .AsNoTracking()
+            .Include(service => service.Detalles)
+            .Where(service => service.Estado == EstadoServicio.EnCurso)
+            .OrderBy(service => service.CreadoEnUtc)
+            .Take(200)
+            .ToListAsync(cancellationToken);
+    }
+
     public void Add(ServicioVehicular servicio)
     {
         dbContext.ServiciosVehiculares.Add(servicio);

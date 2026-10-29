@@ -32,6 +32,24 @@ public sealed class GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logge
         {
             logger.LogError(exception, "Unhandled exception while processing {Path}", httpContext.Request.Path);
         }
+        else if (exception is DbUpdateConcurrencyException concurrencyException)
+        {
+            var affectedEntries = concurrencyException.Entries.Select(entry =>
+            {
+                var key = entry.Properties
+                    .Where(property => property.Metadata.IsPrimaryKey())
+                    .Select(property => $"{property.Metadata.Name}={property.CurrentValue}");
+                var rowVersion = entry.Properties.FirstOrDefault(property => property.Metadata.Name == "RowVersion");
+                var expectedVersion = rowVersion?.OriginalValue is byte[] bytes
+                    ? Convert.ToHexString(bytes)
+                    : "n/a";
+                return $"{entry.Metadata.ClrType.Name} [{string.Join(", ", key)}], state={entry.State}, expectedRowVersion={expectedVersion}";
+            }).ToArray();
+            logger.LogWarning(concurrencyException,
+                "Concurrency conflict while processing {Path}; affected entries: {AffectedEntries}",
+                httpContext.Request.Path,
+                string.Join("; ", affectedEntries));
+        }
         else
         {
             logger.LogInformation(

@@ -46,6 +46,47 @@ public sealed class ProductoTests
     }
 
     [Fact]
+    public void ReserveStock_ReducesAvailableQuantityWithoutChangingPhysicalStock()
+    {
+        var product = CreateProduct(stockInicial: 5m);
+
+        product.ReservarStock(3m);
+
+        Assert.Equal(5m, product.StockActual);
+        Assert.Equal(3m, product.StockReservado);
+        Assert.Equal(2m, product.StockDisponible);
+        Assert.Throws<DomainException>(() => product.ReservarStock(2.001m));
+    }
+
+    [Fact]
+    public void RegisterMovement_CannotConsumeStockReservedForServices()
+    {
+        var product = CreateProduct(stockInicial: 5m);
+        product.ReservarStock(4m);
+
+        Assert.Throws<DomainException>(() => product.RegistrarMovimiento(
+            TipoMovimientoInventario.Salida, 2m, "Venta de mostrador"));
+
+        product.RegistrarMovimiento(TipoMovimientoInventario.Salida, 1m, "Venta de mostrador");
+        Assert.Equal(4m, product.StockActual);
+        Assert.Equal(4m, product.StockReservado);
+        Assert.Equal(0m, product.StockDisponible);
+    }
+
+    [Fact]
+    public void ReleaseReservation_RestoresAvailabilityAndCannotReleaseMoreThanReserved()
+    {
+        var product = CreateProduct(stockInicial: 5m);
+        product.ReservarStock(3m);
+
+        product.LiberarReserva(2m);
+
+        Assert.Equal(1m, product.StockReservado);
+        Assert.Equal(4m, product.StockDisponible);
+        Assert.Throws<DomainException>(() => product.LiberarReserva(2m));
+    }
+
+    [Fact]
     public void Create_RequiresFractionalProductsToUseLiters()
     {
         Assert.Throws<DomainException>(() => new Producto(

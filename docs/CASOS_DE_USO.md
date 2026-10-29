@@ -357,17 +357,58 @@ Se cubren con pruebas unitarias las reglas de saldos y estados; con pruebas de i
 
 ### CU-27 Registrar gasto
 
-El usuario registra categoria, descripcion, fecha, importe, vencimiento, estado y medio de pago. Un gasto pagado genera un egreso; uno pendiente genera una obligacion sin afectar el saldo disponible hasta su pago.
+**Actor:** Usuario autenticado con permisos de gestion de gastos.
+
+**Precondiciones:** La categoria y, si corresponde, el proveedor deben existir; para registrar un pago debe haber una jornada de caja abierta y un medio de pago activo.
+
+**Flujo principal:**
+
+1. El usuario registra categoria, descripcion, fecha, importe total y, opcionalmente, vencimiento, proveedor, entidad relacionada, referencia y observaciones.
+2. Si selecciona la categoria `Otro`, detalla la categoria.
+3. Puede dejar el gasto pendiente o registrar en el mismo paso uno o varios pagos iniciales, incluso combinando medios de pago.
+4. El sistema calcula el estado y saldo pendiente a partir de los pagos: `Pendiente`, `ParcialmentePagado` o `Pagado`. El estado no se ingresa manualmente.
+5. Cada pago genera un movimiento de egreso en Caja, vinculado al gasto, al medio de pago y al usuario. Los pagos se guardan en una transaccion junto con los movimientos, de modo que no quede registrado uno sin el otro.
+6. El gasto pendiente se conserva como obligacion consultable; no afecta Caja hasta que se registra un pago. El sistema muestra vencimientos vencidos o proximos como situaciones derivadas, sin cambiar el estado financiero.
 
 Las compras de mercaderia se registran en Compras, no como gastos comunes, para evitar duplicar inventario o egresos.
 
+No se permite que un egreso en efectivo supere el efectivo disponible, aunque el gasto se haya registrado previamente como obligacion.
+
+### CU-28 Consultar y modificar gastos
+
+El usuario puede buscar y filtrar gastos por periodo, vencimiento, categoria, estado, situacion, medio de pago, proveedor, entidad relacionada, importe, usuario o texto. La consulta presenta total, abonado, saldo pendiente, pagos, reintegros y sus movimientos vinculados.
+
+Solo se pueden modificar gastos pendientes o parcialmente pagados. La modificacion no reescribe pagos previos y no puede reducir el total por debajo de lo ya pagado. La version de concurrencia impide guardar cambios basados en una copia desactualizada. Los gastos pagados o anulados no son editables.
+
+### CU-29 Registrar pago de gasto
+
+El usuario selecciona el gasto pendiente, indica fecha, importe y uno o varios medios de pago con sus referencias. El importe debe ser positivo y no superar el saldo pendiente. El sistema valida que los medios esten activos y que la caja este abierta; si el pago incluye efectivo, valida que alcance el saldo fisico. Pago, estado del gasto y movimientos de caja se guardan atomicamente.
+
+### CU-30 Anular gasto
+
+La anulacion requiere permiso de administrador y motivo. Un gasto sin pagos se anula conservando el registro y sin generar movimientos de caja. Si hubo pagos, el usuario registra reintegros que cubren exactamente lo abonado, con los medios realmente usados para devolver el dinero. Cada reintegro agrega un ingreso vinculado a Caja; solo cuando todos los reintegros y la anulacion pueden confirmarse juntos se marca el gasto como `Anulado`. Los pagos originales nunca se eliminan ni se modifican.
+
+**Rutas de API implementadas:** `GET /api/gastos/categorias`, `GET /api/gastos`, `GET /api/gastos/{id}`, `POST /api/gastos`, `PUT /api/gastos/{id}`, `POST /api/gastos/{id}/pagos` y `POST /api/gastos/{id}/anular`.
+
+### Pruebas de aceptacion del modulo de Gastos
+
+1. Registrar una obligacion pendiente y comprobar que no genera movimiento de Caja.
+2. Registrar un gasto con pagos iniciales combinados y comprobar que cada pago tiene un movimiento vinculado y que el saldo se calcula correctamente.
+3. Pagar parcialmente y luego cancelar el saldo; verificar las transiciones a `ParcialmentePagado` y `Pagado`.
+4. Intentar sobrepagar, elegir un medio inactivo, pagar sin caja abierta o exceder el efectivo disponible; verificar que la operacion se rechaza sin dejar movimientos parciales.
+5. Modificar una obligacion y comprobar que el total no puede quedar por debajo de lo abonado ni puede modificarse un gasto pagado.
+6. Consultar filtros de vencido, proximo a vencer y parcialmente pagado y contrastar la situacion derivada con las fechas.
+7. Anular un gasto pendiente y comprobar que queda auditable sin movimiento de caja; intentar anular uno pagado sin reintegro completo y verificar el rechazo.
+8. Anular un gasto pagado con reintegros completos; comprobar que los pagos se conservan, se agregan ingresos de reintegro y el gasto queda anulado.
+9. Intentar registrar una compra de mercaderia como gasto y verificar que el sistema la deriva al modulo de Compras.
+
 ## 12. Reportes y panel
 
-### CU-28 Consultar panel principal
+### CU-31 Consultar panel principal
 
 El panel resume ventas, servicios, cobros, stock bajo, medios de pago y obligaciones proximas. No crea datos nuevos: consulta la informacion de los modulos.
 
-### CU-29 Consultar reportes
+### CU-32 Consultar reportes
 
 El usuario autorizado puede consultar ventas, servicios, productos vendidos, rotacion, ingresos, gastos, caja e inventario por periodo y filtros.
 
@@ -375,11 +416,11 @@ Los reportes de rentabilidad utilizan el costo historico aplicado en cada operac
 
 ## 13. Usuarios y auditoria
 
-### CU-30 Gestionar usuarios y permisos
+### CU-33 Gestionar usuarios y permisos
 
 El administrador registra, modifica, desactiva usuarios y asigna roles. Los permisos determinan si el usuario puede consultar, crear, modificar, anular, corregir caja o ver costos.
 
-### CU-31 Consultar auditoria
+### CU-34 Consultar auditoria
 
 El sistema conserva usuario, fecha, operacion, entidad, identificador, valores relevantes y motivo de cambios sensibles. La auditoria no se puede editar desde la aplicacion.
 

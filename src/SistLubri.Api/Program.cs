@@ -16,6 +16,7 @@ using SistLubri.Application.Servicios;
 using SistLubri.Application.Vehiculos;
 using SistLubri.Application.Ventas;
 using SistLubri.Application.Proveedores;
+using SistLubri.Application.Gastos;
 using SistLubri.Application.Common.Security;
 using SistLubri.Infrastructure;
 using SistLubri.Infrastructure.Persistence;
@@ -37,6 +38,7 @@ builder.Services.AddScoped<ServicioVehicularService>();
 builder.Services.AddScoped<VentaService>();
 builder.Services.AddScoped<CajaService>();
 builder.Services.AddScoped<ProveedorService>();
+builder.Services.AddScoped<GastoService>();
 builder.Services.AddHostedService<CajaScheduler>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")

@@ -197,6 +197,9 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.Property<Guid>("AbiertaPorUsuarioId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<DateTimeOffset?>("ActualizadaEnUtc")
+                        .HasColumnType("datetimeoffset");
+
                     b.Property<DateTimeOffset?>("CerradaEnUtc")
                         .HasColumnType("datetimeoffset");
 
@@ -234,6 +237,12 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
 
                     b.Property<Guid?>("ReabiertaPorUsuarioId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<decimal?>("SaldoContado")
                         .HasPrecision(18, 2)
@@ -300,6 +309,9 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.Property<DateTimeOffset>("FechaUtc")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<Guid?>("GastoId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<decimal>("Importe")
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
@@ -314,12 +326,18 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
+                    b.Property<Guid?>("PagoGastoId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("PagoVentaId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Referencia")
                         .HasMaxLength(120)
                         .HasColumnType("nvarchar(120)");
+
+                    b.Property<Guid?>("ReintegroGastoId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Tipo")
                         .IsRequired()
@@ -336,13 +354,23 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("FechaUtc");
 
+                    b.HasIndex("GastoId");
+
                     b.HasIndex("JornadaCajaId");
 
                     b.HasIndex("MedioPagoId");
 
+                    b.HasIndex("PagoGastoId")
+                        .IsUnique()
+                        .HasFilter("[PagoGastoId] IS NOT NULL");
+
                     b.HasIndex("PagoVentaId")
                         .IsUnique()
                         .HasFilter("[PagoVentaId] IS NOT NULL");
+
+                    b.HasIndex("ReintegroGastoId")
+                        .IsUnique()
+                        .HasFilter("[ReintegroGastoId] IS NOT NULL");
 
                     b.HasIndex("VentaId");
 
@@ -509,6 +537,184 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Clientes", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Gastos.Gasto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("ActualizadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ActualizadoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("AnuladoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("AnuladoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Categoria")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<string>("CategoriaDetalle")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<DateTimeOffset>("CreadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreadoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Descripcion")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("EntidadRelacionada")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("Estado")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("FechaVencimiento")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("ImporteTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("MotivoAnulacion")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid?>("ProveedorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ReferenciaComprobante")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<bool>("VencimientoEstimado")
+                        .HasColumnType("bit");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Categoria");
+
+                    b.HasIndex("CreadoPorUsuarioId");
+
+                    b.HasIndex("Estado");
+
+                    b.HasIndex("Fecha");
+
+                    b.HasIndex("FechaVencimiento");
+
+                    b.HasIndex("ProveedorId");
+
+                    b.ToTable("Gastos", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Gastos.PagoGasto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("GastoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Importe")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("MedioPagoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Observacion")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Referencia")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GastoId", "Fecha");
+
+                    b.ToTable("PagosGasto", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Gastos.ReintegroGasto", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<Guid>("GastoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Importe")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("MedioPagoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Observacion")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Referencia")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("GastoId", "Fecha");
+
+                    b.ToTable("ReintegrosGasto", (string)null);
                 });
 
             modelBuilder.Entity("SistLubri.Domain.Productos.MovimientoInventario", b =>
@@ -1397,13 +1603,32 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("SistLubri.Domain.Caja.MovimientoCaja", b =>
                 {
+                    b.HasOne("SistLubri.Domain.Gastos.Gasto", null)
+                        .WithMany()
+                        .HasForeignKey("GastoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("SistLubri.Domain.Caja.JornadaCaja", "JornadaCaja")
                         .WithMany("Movimientos")
                         .HasForeignKey("JornadaCajaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
+                    b.HasOne("SistLubri.Domain.Gastos.PagoGasto", "PagoGasto")
+                        .WithOne("MovimientoCaja")
+                        .HasForeignKey("SistLubri.Domain.Caja.MovimientoCaja", "PagoGastoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SistLubri.Domain.Gastos.ReintegroGasto", "ReintegroGasto")
+                        .WithOne("MovimientoCaja")
+                        .HasForeignKey("SistLubri.Domain.Caja.MovimientoCaja", "ReintegroGastoId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.Navigation("JornadaCaja");
+
+                    b.Navigation("PagoGasto");
+
+                    b.Navigation("ReintegroGasto");
                 });
 
             modelBuilder.Entity("SistLubri.Domain.Caja.RegistroAperturaCaja", b =>
@@ -1426,6 +1651,34 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("JornadaCaja");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Gastos.Gasto", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Proveedores.Proveedor", "Proveedor")
+                        .WithMany()
+                        .HasForeignKey("ProveedorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Proveedor");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Gastos.PagoGasto", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Gastos.Gasto", null)
+                        .WithMany("Pagos")
+                        .HasForeignKey("GastoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Gastos.ReintegroGasto", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Gastos.Gasto", null)
+                        .WithMany("Reintegros")
+                        .HasForeignKey("GastoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SistLubri.Domain.Productos.MovimientoInventario", b =>
@@ -1552,6 +1805,23 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.Navigation("Cierres");
 
                     b.Navigation("Movimientos");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Gastos.Gasto", b =>
+                {
+                    b.Navigation("Pagos");
+
+                    b.Navigation("Reintegros");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Gastos.PagoGasto", b =>
+                {
+                    b.Navigation("MovimientoCaja");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Gastos.ReintegroGasto", b =>
+                {
+                    b.Navigation("MovimientoCaja");
                 });
 
             modelBuilder.Entity("SistLubri.Domain.Productos.Producto", b =>

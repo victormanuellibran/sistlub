@@ -20,12 +20,19 @@ internal sealed class ServicioVehicularConfiguration : IEntityTypeConfiguration<
         builder.Property(servicio => servicio.DanosExistentes).HasMaxLength(2000);
         builder.Property(servicio => servicio.Observaciones).HasMaxLength(2000);
         builder.Property(servicio => servicio.MotivoAnulacion).HasMaxLength(500);
+        builder.Property(servicio => servicio.CreadoPorUsuarioId);
+        builder.Property(servicio => servicio.ActualizadoPorUsuarioId);
+        builder.Property(servicio => servicio.ActualizadoEnUtc);
+        builder.Property(servicio => servicio.FinalizadoPorUsuarioId);
+        builder.Property(servicio => servicio.AnuladoPorUsuarioId);
         builder.Property(servicio => servicio.ManoObra).HasPrecision(18, 2);
         builder.Property(servicio => servicio.Estado).HasConversion<string>().HasMaxLength(20);
+        builder.Property<byte[]>("RowVersion").IsRowVersion();
         builder.HasIndex(servicio => servicio.VehiculoId);
         builder.HasIndex(servicio => servicio.ClienteId);
         builder.HasIndex(servicio => servicio.Patente);
         builder.HasIndex(servicio => servicio.CreadoEnUtc);
+        builder.HasIndex(servicio => servicio.Estado);
         builder.HasOne<Vehiculo>()
             .WithMany()
             .HasForeignKey(servicio => servicio.VehiculoId)
@@ -53,6 +60,7 @@ internal sealed class DetalleServicioConfiguration : IEntityTypeConfiguration<De
         builder.Property(detalle => detalle.Cantidad).HasPrecision(18, 3);
         builder.Property(detalle => detalle.PrecioUnitario).HasPrecision(18, 2);
         builder.Property(detalle => detalle.CostoUnitario).HasPrecision(18, 2);
+        builder.Property(detalle => detalle.UnidadMedida).HasConversion<string>().HasMaxLength(20);
         builder.Ignore(detalle => detalle.Subtotal);
         builder.HasIndex(detalle => detalle.ProductoId);
         builder.HasIndex(detalle => new { detalle.ServicioVehicularId, detalle.ProductoId }).IsUnique();

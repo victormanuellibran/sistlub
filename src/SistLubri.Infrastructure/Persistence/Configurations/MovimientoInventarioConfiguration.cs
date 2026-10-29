@@ -16,6 +16,7 @@ internal sealed class MovimientoInventarioConfiguration : IEntityTypeConfigurati
         builder.Property(movimiento => movimiento.StockAnterior).HasPrecision(18, 3);
         builder.Property(movimiento => movimiento.StockResultante).HasPrecision(18, 3);
         builder.Property(movimiento => movimiento.Motivo).HasMaxLength(500).IsRequired();
+        builder.HasIndex(movimiento => movimiento.UsuarioId);
 
         builder.HasIndex(movimiento => movimiento.ProductoId);
         builder.HasIndex(movimiento => movimiento.FechaUtc);

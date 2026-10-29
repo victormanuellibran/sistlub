@@ -21,7 +21,8 @@ public sealed class Producto : Entity
         decimal costoCompra,
         bool esFraccionado,
         decimal stockInicial = 0,
-        decimal stockMinimo = 0)
+        decimal stockMinimo = 0,
+        Guid? usuarioId = null)
     {
         Codigo = NormalizarCodigo(codigo);
         ActualizarDatos(
@@ -47,7 +48,8 @@ public sealed class Producto : Entity
             RegistrarMovimiento(
                 TipoMovimientoInventario.CargaInicial,
                 stockInicial,
-                "Carga inicial de inventario");
+                "Carga inicial de inventario",
+                usuarioId: usuarioId);
         }
     }
 
@@ -69,6 +71,10 @@ public sealed class Producto : Entity
 
     public decimal StockActual { get; private set; }
 
+    public decimal StockReservado { get; private set; }
+
+    public decimal StockDisponible => decimal.Round(StockActual - StockReservado, 3);
+
     public decimal StockMinimo { get; private set; }
 
     public bool EsFraccionado { get; private set; }
@@ -81,9 +87,9 @@ public sealed class Producto : Entity
 
     public IReadOnlyCollection<MovimientoInventario> Movimientos => _movimientos.AsReadOnly();
 
-    public EstadoInventario EstadoInventario => StockActual <= 0
+    public EstadoInventario EstadoInventario => StockDisponible <= 0
         ? EstadoInventario.SinStock
-        : StockMinimo > 0 && StockActual <= StockMinimo
+        : StockMinimo > 0 && StockDisponible <= StockMinimo
             ? EstadoInventario.BajoStock
             : EstadoInventario.Disponible;
 
@@ -156,7 +162,8 @@ public sealed class Producto : Entity
         TipoMovimientoInventario tipo,
         decimal cantidad,
         string motivo,
-        Guid? referenciaId = null)
+        Guid? referenciaId = null,
+        Guid? usuarioId = null)
     {
         if (!Activo)
         {
@@ -166,6 +173,11 @@ public sealed class Producto : Entity
         if (!Enum.IsDefined(tipo))
         {
             throw new DomainException("El tipo de movimiento no es valido.");
+        }
+
+        if (usuarioId == Guid.Empty)
+        {
+            throw new DomainException("El usuario del movimiento no es valido.");
         }
 
         var motivoNormalizado = NormalizarRequerido(motivo, 500, "El motivo");
@@ -178,9 +190,9 @@ public sealed class Producto : Entity
         var esSalida = tipo is TipoMovimientoInventario.Salida or TipoMovimientoInventario.AjusteNegativo;
         var stockResultante = StockActual + (esSalida ? -cantidadNormalizada : cantidadNormalizada);
 
-        if (stockResultante < 0)
+        if (stockResultante < StockReservado)
         {
-            throw new DomainException("El movimiento produciria un stock negativo.");
+            throw new DomainException("El movimiento reduciria el stock por debajo de las cantidades reservadas.");
         }
 
         var movimiento = new MovimientoInventario(
@@ -190,7 +202,8 @@ public sealed class Producto : Entity
             StockActual,
             stockResultante,
             motivoNormalizado,
-            referenciaId);
+            referenciaId,
+            usuarioId);
 
         _movimientos.Add(movimiento);
         StockActual = stockResultante;
@@ -198,8 +211,47 @@ public sealed class Producto : Entity
         return movimiento;
     }
 
+    public void ReservarStock(decimal cantidad)
+    {
+        if (!Activo)
+        {
+            throw new DomainException("No se puede reservar un producto inactivo.");
+        }
+
+        var normalizedQuantity = decimal.Round(cantidad, 3);
+        if (normalizedQuantity <= 0)
+        {
+            throw new DomainException("La cantidad a reservar debe ser mayor que cero.");
+        }
+
+        if (normalizedQuantity > StockDisponible)
+        {
+            throw new DomainException($"Stock insuficiente para reservar '{Nombre}'. Disponible: {StockDisponible}.");
+        }
+
+        StockReservado = decimal.Round(StockReservado + normalizedQuantity, 3);
+        ActualizadoEnUtc = DateTimeOffset.UtcNow;
+    }
+
+    public void LiberarReserva(decimal cantidad)
+    {
+        var normalizedQuantity = decimal.Round(cantidad, 3);
+        if (normalizedQuantity <= 0 || normalizedQuantity > StockReservado)
+        {
+            throw new DomainException("La cantidad a liberar no coincide con el stock reservado.");
+        }
+
+        StockReservado = decimal.Round(StockReservado - normalizedQuantity, 3);
+        ActualizadoEnUtc = DateTimeOffset.UtcNow;
+    }
+
     public void CambiarEstado(bool activo)
     {
+        if (!activo && StockReservado > 0)
+        {
+            throw new DomainException("No se puede desactivar un producto con cantidades reservadas por servicios en curso.");
+        }
+
         Activo = activo;
         ActualizadoEnUtc = DateTimeOffset.UtcNow;
     }

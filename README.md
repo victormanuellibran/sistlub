@@ -46,6 +46,8 @@ Swagger queda disponible en `/swagger`, OpenAPI en `/openapi/v1.json` y el estad
 
 Los cortes verticales disponibles implementan Clientes, Vehiculos, Productos, Inventario, Servicios vehiculares, Ventas, Caja, Proveedores y Gastos:
 
+Inventario conserva auditoría de ajustes, mínimos y movimientos. Las entradas de compras y consumos comerciales se registran desde sus módulos fuente; los litros fraccionados se controlan como saldo agregado por producto, sin desglose por tambor individual por ahora.
+
 - alta, busqueda, consulta y modificacion de clientes;
 - desactivacion y reactivacion sin eliminar informacion historica;
 - alta de vehiculos asociados a clientes activos;
@@ -65,7 +67,7 @@ Los cortes verticales disponibles implementan Clientes, Vehiculos, Productos, In
 - alta, consulta, modificacion y desactivacion/reactivacion de proveedores, con CUIT unico, aviso de posibles duplicados e historial de estado auditable.
 - registro de gastos pendientes, parciales o pagados, vencimientos, pagos combinados vinculados a Caja, consulta con filtros, modificacion con control de concurrencia y anulacion con reintegros auditables.
 
-El estado de cuenta del proveedor y el modulo de Compras siguen pendientes; los gastos pueden vincularse opcionalmente a un proveedor, pero no constituyen todavia un estado de cuenta integral ni registran compras de mercaderia.
+Compras implementa ordenes, recepciones parciales, facturas de proveedor y pagos vinculados a Caja. La orden por si sola no genera stock ni deuda; cada recepcion incrementa inventario solo por cantidades aceptadas, las facturas crean saldos por pagar y sus pagos registran egresos de Caja. La devolucion formal al proveedor y la nota de credito, asi como los informes consolidados por origen, siguen pendientes. No se duplican compras como gastos manuales. Gastos generales admite insumos y bienes de uso como clasificaciones distintas; no reemplaza un registro contable de activos ni calcula depreciaciones.
 
 ## Caja: comportamiento actual y reglas acordadas
 

@@ -143,6 +143,18 @@ internal sealed class FakeProductoRepository(params Producto[] productos) : IPro
         return Task.FromResult(result);
     }
 
+    public Task<IReadOnlyDictionary<Guid, DateTimeOffset>> GetLatestMovementDatesAsync(
+        IReadOnlyCollection<Guid> productoIds,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyDictionary<Guid, DateTimeOffset> result = Items
+            .Where(producto => productoIds.Contains(producto.Id))
+            .SelectMany(producto => producto.Movimientos)
+            .GroupBy(movimiento => movimiento.ProductoId)
+            .ToDictionary(group => group.Key, group => group.Max(movimiento => movimiento.FechaUtc));
+        return Task.FromResult(result);
+    }
+
     public Task<IReadOnlyList<Producto>> GetAlertsAsync(CancellationToken cancellationToken = default)
     {
         IReadOnlyList<Producto> result = Items
@@ -164,6 +176,25 @@ internal sealed class FakeProductoRepository(params Producto[] productos) : IPro
             .Where(movimiento => !tipo.HasValue || movimiento.Tipo == tipo.Value)
             .ToArray();
         return Task.FromResult(result);
+    }
+
+    public Task<IReadOnlyList<MovimientoInventario>> SearchMovementsAsync(
+        Guid? productoId,
+        DateOnly? desde,
+        DateOnly? hasta,
+        TipoMovimientoInventario? tipo,
+        CancellationToken cancellationToken = default)
+    {
+        IEnumerable<MovimientoInventario> query = Items
+            .Where(producto => !productoId.HasValue || producto.Id == productoId.Value)
+            .SelectMany(producto => producto.Movimientos);
+        if (desde.HasValue)
+            query = query.Where(movimiento => DateOnly.FromDateTime(movimiento.FechaUtc.UtcDateTime) >= desde.Value);
+        if (hasta.HasValue)
+            query = query.Where(movimiento => DateOnly.FromDateTime(movimiento.FechaUtc.UtcDateTime) <= hasta.Value);
+        if (tipo.HasValue)
+            query = query.Where(movimiento => movimiento.Tipo == tipo.Value);
+        return Task.FromResult<IReadOnlyList<MovimientoInventario>>(query.OrderByDescending(item => item.FechaUtc).Take(500).ToArray());
     }
 
     public Task<bool> ExistsCodeAsync(

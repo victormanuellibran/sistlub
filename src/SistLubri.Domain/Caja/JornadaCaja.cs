@@ -101,11 +101,14 @@ public sealed class JornadaCaja : Entity
         bool afectaEfectivo = true,
         Guid? gastoId = null,
         Guid? pagoGastoId = null,
-        Guid? reintegroGastoId = null)
+        Guid? reintegroGastoId = null,
+        Guid? facturaCompraId = null,
+        Guid? pagoCompraId = null)
     {
         ValidarAbierta(usuarioId);
         var esEgresoGasto = tipo == TipoMovimientoCaja.EgresoGasto;
         var esReintegroGasto = tipo == TipoMovimientoCaja.ReintegroGasto;
+        var esEgresoCompra = tipo == TipoMovimientoCaja.EgresoCompra;
         if (!Enum.IsDefined(tipo) || importe <= 0 ||
             ((tipo is TipoMovimientoCaja.CobroVenta or TipoMovimientoCaja.IngresoManual) && !esIngreso) ||
             ((tipo is TipoMovimientoCaja.EgresoManual or TipoMovimientoCaja.RetiroEfectivo) && esIngreso) ||
@@ -114,7 +117,10 @@ public sealed class JornadaCaja : Entity
             (tipo == TipoMovimientoCaja.CobroVenta && !medioPagoId.HasValue) ||
             (esEgresoGasto && (esIngreso || !medioPagoId.HasValue || !gastoId.HasValue || !pagoGastoId.HasValue || reintegroGastoId.HasValue)) ||
             (esReintegroGasto && (!esIngreso || !medioPagoId.HasValue || !gastoId.HasValue || !reintegroGastoId.HasValue || pagoGastoId.HasValue)) ||
-            (!esEgresoGasto && !esReintegroGasto && (gastoId.HasValue || pagoGastoId.HasValue || reintegroGastoId.HasValue)))
+            (esEgresoCompra && (esIngreso || !medioPagoId.HasValue || !facturaCompraId.HasValue || !pagoCompraId.HasValue ||
+                gastoId.HasValue || pagoGastoId.HasValue || reintegroGastoId.HasValue)) ||
+            (!esEgresoCompra && (facturaCompraId.HasValue || pagoCompraId.HasValue)) ||
+            (!esEgresoGasto && !esReintegroGasto && !esEgresoCompra && (gastoId.HasValue || pagoGastoId.HasValue || reintegroGastoId.HasValue)))
         {
             throw new DomainException("El movimiento de caja no es valido o le faltan referencias requeridas.");
         }
@@ -124,7 +130,8 @@ public sealed class JornadaCaja : Entity
 
         var movimiento = new MovimientoCaja(
             Id, tipo, esIngreso, importe, usuarioId, medioPagoId, ventaId, referencia, motivo, afectaEfectivo,
-            gastoId: gastoId, pagoGastoId: pagoGastoId, reintegroGastoId: reintegroGastoId);
+            gastoId: gastoId, pagoGastoId: pagoGastoId, reintegroGastoId: reintegroGastoId,
+            facturaCompraId: facturaCompraId, pagoCompraId: pagoCompraId);
         _movimientos.Add(movimiento);
         ActualizadaEnUtc = DateTimeOffset.UtcNow;
         return movimiento;

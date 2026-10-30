@@ -28,6 +28,8 @@ public sealed class GastoService(
         new(CategoriaGasto.Seguros, "Seguros"),
         new(CategoriaGasto.Limpieza, "Limpieza"),
         new(CategoriaGasto.TelefoniaEInternet, "Telefonia e internet"),
+        new(CategoriaGasto.Insumos, "Insumos"),
+        new(CategoriaGasto.BienesDeUso, "Bienes de uso / equipamiento"),
         new(CategoriaGasto.Otro, "Otro")
     ];
 

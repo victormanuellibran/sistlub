@@ -34,7 +34,7 @@ public sealed class Producto : Entity
             precioVenta,
             costoCompra,
             esFraccionado);
-        ConfigurarStockMinimo(stockMinimo);
+        ConfigurarStockMinimo(stockMinimo, usuarioId);
         Activo = true;
         CreadoEnUtc = DateTimeOffset.UtcNow;
 
@@ -76,6 +76,10 @@ public sealed class Producto : Entity
     public decimal StockDisponible => decimal.Round(StockActual - StockReservado, 3);
 
     public decimal StockMinimo { get; private set; }
+
+    public DateTimeOffset? StockMinimoActualizadoEnUtc { get; private set; }
+
+    public Guid? StockMinimoActualizadoPorUsuarioId { get; private set; }
 
     public bool EsFraccionado { get; private set; }
 
@@ -147,7 +151,7 @@ public sealed class Producto : Entity
         ActualizadoEnUtc = DateTimeOffset.UtcNow;
     }
 
-    public void ConfigurarStockMinimo(decimal stockMinimo)
+    public void ConfigurarStockMinimo(decimal stockMinimo, Guid? usuarioId = null)
     {
         if (stockMinimo < 0)
         {
@@ -155,6 +159,8 @@ public sealed class Producto : Entity
         }
 
         StockMinimo = decimal.Round(stockMinimo, 3);
+        StockMinimoActualizadoEnUtc = DateTimeOffset.UtcNow;
+        StockMinimoActualizadoPorUsuarioId = usuarioId;
         ActualizadoEnUtc = DateTimeOffset.UtcNow;
     }
 
@@ -209,6 +215,21 @@ public sealed class Producto : Entity
         StockActual = stockResultante;
         ActualizadoEnUtc = DateTimeOffset.UtcNow;
         return movimiento;
+    }
+
+    public void RegistrarCostoCompra(decimal cantidadRecibida, decimal costoUnitario)
+    {
+        var cantidad = decimal.Round(cantidadRecibida, 3);
+        if (cantidad <= 0 || costoUnitario < 0)
+        {
+            throw new DomainException("La cantidad recibida debe ser positiva y el costo no puede ser negativo.");
+        }
+
+        var costo = decimal.Round(costoUnitario, 2);
+        CostoCompra = StockActual <= 0
+            ? costo
+            : decimal.Round(((StockActual * CostoCompra) + (cantidad * costo)) / (StockActual + cantidad), 2);
+        ActualizadoEnUtc = DateTimeOffset.UtcNow;
     }
 
     public void ReservarStock(decimal cantidad)

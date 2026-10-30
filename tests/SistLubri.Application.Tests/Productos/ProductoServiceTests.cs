@@ -63,7 +63,7 @@ public sealed class ProductoServiceTests
         var result = await service.RegisterMovementAsync(
             product.Id,
             new RegistrarMovimientoInventarioCommand(
-                TipoMovimientoInventario.Salida,
+                TipoMovimientoInventario.AjusteNegativo,
                 2.5m,
                 "Uso en servicio",
                 Guid.NewGuid()));
@@ -85,7 +85,39 @@ public sealed class ProductoServiceTests
     }
 
     [Fact]
-    public async Task RegisterMovement_RejectsASecondInitialLoad()
+    public async Task SetMinimumStock_RecordsTheResponsibleUser()
+    {
+        var product = CreateProduct(stockInicial: 8m);
+        var user = new FakeCurrentUser();
+        var service = new ProductoService(new FakeProductoRepository(product), new FakeUnitOfWork(), user);
+
+        var result = await service.SetMinimumStockAsync(product.Id, 3m);
+
+        Assert.Equal(3m, result.StockMinimo);
+        Assert.Equal(user.Id, product.StockMinimoActualizadoPorUsuarioId);
+        Assert.NotNull(product.StockMinimoActualizadoEnUtc);
+    }
+
+    [Fact]
+    public async Task SearchMovements_FiltersByDateAndType()
+    {
+        var product = CreateProduct(stockInicial: 8m);
+        product.RegistrarMovimiento(TipoMovimientoInventario.AjusteNegativo, 2m, "Merma");
+        var service = new ProductoService(new FakeProductoRepository(product), new FakeUnitOfWork());
+
+        var result = await service.SearchMovementsAsync(
+            product.Id,
+            DateOnly.FromDateTime(DateTime.UtcNow),
+            DateOnly.FromDateTime(DateTime.UtcNow),
+            TipoMovimientoInventario.AjusteNegativo);
+
+        var movement = Assert.Single(result);
+        Assert.Equal("Ajuste", movement.Origen);
+        Assert.Equal(6m, movement.StockResultante);
+    }
+
+    [Fact]
+    public async Task RegisterMovement_RejectsOperationalMovementOutsideItsOwningModule()
     {
         var product = CreateProduct();
         var service = new ProductoService(new FakeProductoRepository(product), new FakeUnitOfWork());
@@ -93,7 +125,7 @@ public sealed class ProductoServiceTests
         await Assert.ThrowsAsync<ConflictException>(() => service.RegisterMovementAsync(
             product.Id,
             new RegistrarMovimientoInventarioCommand(
-                TipoMovimientoInventario.CargaInicial,
+                TipoMovimientoInventario.EntradaCompra,
                 2m,
                 "Otra carga inicial",
                 null)));

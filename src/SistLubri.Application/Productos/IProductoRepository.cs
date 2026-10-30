@@ -11,10 +11,21 @@ public interface IProductoRepository
         bool includeInactive,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyDictionary<Guid, DateTimeOffset>> GetLatestMovementDatesAsync(
+        IReadOnlyCollection<Guid> productoIds,
+        CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<Producto>> GetAlertsAsync(CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<MovimientoInventario>> GetMovementsAsync(
         Guid productoId,
+        TipoMovimientoInventario? tipo,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<MovimientoInventario>> SearchMovementsAsync(
+        Guid? productoId,
+        DateOnly? desde,
+        DateOnly? hasta,
         TipoMovimientoInventario? tipo,
         CancellationToken cancellationToken = default);
 

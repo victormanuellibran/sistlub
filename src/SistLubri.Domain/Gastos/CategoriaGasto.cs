@@ -12,5 +12,7 @@ public enum CategoriaGasto
     Seguros = 8,
     Limpieza = 9,
     TelefoniaEInternet = 10,
+    Insumos = 11,
+    BienesDeUso = 12,
     Otro = 99
 }

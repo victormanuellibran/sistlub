@@ -10,6 +10,7 @@ using SistLubri.Application.Vehiculos;
 using SistLubri.Application.Ventas;
 using SistLubri.Application.Proveedores;
 using SistLubri.Application.Gastos;
+using SistLubri.Application.Compras;
 using SistLubri.Infrastructure.Persistence;
 using SistLubri.Infrastructure.Persistence.Repositories;
 using SistLubri.Infrastructure.Persistence.Usuarios;
@@ -45,6 +46,7 @@ public static class DependencyInjection
         services.AddScoped<ICajaRepository, CajaRepository>();
         services.AddScoped<IProveedorRepository, ProveedorRepository>();
         services.AddScoped<IGastoRepository, GastoRepository>();
+        services.AddScoped<ICompraRepository, CompraRepository>();
         services.AddScoped<IUnitOfWork>(provider => provider.GetRequiredService<SistLubriDbContext>());
 
 

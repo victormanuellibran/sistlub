@@ -140,6 +140,10 @@ El sistema muestra stock actual, stock minimo, estado, movimientos, origen, fech
 
 El sistema alerta productos `BajoStock` y `SinStock`. Nunca permite existencias negativas.
 
+El inventario permite consultar los movimientos recientes con filtros por producto, fecha y tipo. Los movimientos originados por compras y operaciones comerciales se generan desde sus respectivos módulos; el endpoint manual de inventario se reserva para ajustes positivos o negativos con motivo obligatorio. El cambio del stock mínimo conserva fecha y usuario responsable.
+
+El control vigente de aceites fraccionados se realiza sobre el saldo agregado en litros del producto, incluyendo consumos y ajustes. El seguimiento por tambor individual aún no se habilita: requiere que compras, ventas y servicios asignen cada ingreso/consumo al recipiente dentro de la misma transacción, para que la suma de tambores nunca contradiga el stock agregado.
+
 ### CU-12 Registrar aceite fraccionado
 
 **Actor:** Usuario autorizado.
@@ -275,19 +279,29 @@ El usuario indica la venta original, los productos y el motivo. El sistema conse
 
 ## 10. Compras y proveedores
 
-El primer incremento implementado de Proveedores cubre alta, consulta, busqueda, modificacion, desactivacion y reactivacion. El CUIT se normaliza y se mantiene unico cuando se informa; coincidencias exactas por razon social, telefono o correo se presentan como posibles duplicados que el usuario puede confirmar. La baja conserva el historial y exige motivo. Compras, obligaciones y estado de cuenta todavia no se implementan en este incremento.
+Proveedores permite alta, consulta, busqueda, modificacion, desactivacion y reactivacion. El CUIT se normaliza y se mantiene unico cuando se informa; coincidencias exactas por razon social, telefono o correo se presentan como posibles duplicados que el usuario puede confirmar. La baja conserva el historial y exige motivo. El primer incremento de Compras implementa ordenes, recepciones parciales, facturas y pagos vinculados a Caja. La devolucion formal a proveedor con nota de credito y los reportes consolidados quedan pendientes.
 
-### CU-21 Registrar compra
+### CU-21 Registrar orden de compra (implementado)
 
-El usuario selecciona proveedor, productos, cantidades, costos, fecha y condicion de pago. La compra queda pendiente de recepcion o confirmacion.
+La orden documenta el pedido acordado con el proveedor, productos, cantidades y costos estimados. Por si sola no aumenta el inventario, no genera egreso de caja ni constituye una deuda contabilizada. La orden puede cancelarse mientras no tenga recepciones ni facturas asociadas.
 
-### CU-22 Recibir mercaderia
+### CU-22 Registrar recepcion de mercaderia (implementado)
 
-El usuario verifica cantidades recibidas. El sistema actualiza inventario solo por lo efectivamente recibido y genera movimientos de entrada vinculados a la compra.
+Cada entrega se registra como una recepcion independiente vinculada a la orden, con fecha, usuario, remito, cantidades aceptadas y danadas y observaciones. Se permiten recepciones parciales. Solo la cantidad aceptada ingresa al stock, mediante movimientos auditables. Una cantidad danada no disponible no se suma al inventario; el reclamo, reemplazo o nota de credito se registra por separado. El costo unitario real se captura en la recepcion y actualiza el costo promedio ponderado movil del producto. La orden se completa al recibir todas las cantidades o se cierra explicitamente con diferencias.
 
-### CU-23 Registrar pago a proveedor
+### CU-23 Registrar factura de proveedor y deuda (implementado)
 
-El sistema registra pago total o parcial, actualiza el saldo pendiente y genera el egreso de caja. Registrar una compra no implica automaticamente que haya sido pagada.
+La factura se registra vinculada a la orden, con numero, fecha, importe total y vencimiento. La factura, no la orden sin facturar, crea el saldo pendiente de pago. Una orden puede tener mas de una factura. El importe facturado puede diferir del costo estimado; la diferencia se conserva como dato financiero y no modifica silenciosamente costos o recepciones.
+
+### CU-24 Registrar pago a proveedor (implementado)
+
+El usuario selecciona una factura, fecha, importe y uno o varios medios de pago. El pago reduce su saldo pendiente y genera un egreso de Caja vinculado. Los pagos parciales se permiten; no se puede exceder el saldo ni pagar sin caja abierta y medio activo. La compra no se duplica como Gasto: los informes consolidan pagos por origen y muestran por separado deuda, stock recibido y costo de mercaderia vendida.
+
+### CU-25 Cancelar orden o devolver mercaderia (parcialmente implementado)
+
+Una orden sin recepciones ni facturas puede cancelarse con motivo; esta parte esta implementada. Si ya hubo recepcion, no se borra ni se anula la entrada original: el flujo previsto es registrar una devolucion al proveedor, generar una salida de inventario solo si hay stock disponible y vincular el credito o reintegro financiero correspondiente. Este flujo de devolucion y nota de credito aun no esta implementado. El cierre de cantidades pendientes ya se registra por separado y no representa una devolucion.
+
+**Rutas implementadas:** `GET /api/compras`, `GET /api/compras/{id}`, `POST /api/compras`, `PUT /api/compras/{id}`, `POST /api/compras/{id}/recepciones`, `POST /api/compras/{id}/facturas`, `POST /api/compras/{id}/facturas/{facturaId}/pagos`, `POST /api/compras/{id}/cerrar-recepcion` y `POST /api/compras/{id}/anular`.
 
 ## 11. Caja y gastos
 
@@ -426,11 +440,10 @@ El sistema conserva usuario, fecha, operacion, entidad, identificador, valores r
 
 ## 14. Orden recomendado de implementacion
 
-1. Ajustes de reglas de kilometraje, unidades de producto y origen de movimientos.
-2. Servicios vehiculares y su historial.
-3. Ventas y cobros.
-4. Caja y medios de pago.
-5. Compras, proveedores y recepcion de mercaderia.
-6. Gastos y obligaciones.
-7. Usuarios, permisos y auditoria.
-8. Panel y reportes.
+Los modulos base de productos/inventario, servicios, ventas, caja, proveedores y gastos estan desarrollados en el backend. Compras tiene implementados ordenes, recepciones, facturas y pagos; sus devoluciones a proveedor y notas de credito siguen pendientes. Para completar los flujos operativos y obtener una vista financiera confiable, se recomienda continuar con:
+
+1. Devoluciones a proveedor, notas de credito y conciliacion con pagos.
+2. Pruebas de integracion de Compras contra SQL Server y validacion manual de sus rutas.
+3. Reportes de caja, gastos y compras agrupados por origen, sin duplicar los egresos de compra.
+4. Usuarios, permisos y auditoria transversal.
+5. Interfaz web y experiencia de busqueda/seleccion por nombre, evitando que el usuario opere con GUID.

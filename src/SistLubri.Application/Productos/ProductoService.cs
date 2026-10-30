@@ -36,7 +36,7 @@ public sealed class ProductoService(
 
         productoRepository.Add(producto);
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return MapDetalle(producto);
+        return MapDetalle(producto, producto.Movimientos.Select(item => (DateTimeOffset?)item.FechaUtc).Max());
     }
 
     public async Task<ProductoDetalleDto> GetByIdAsync(
@@ -44,7 +44,7 @@ public sealed class ProductoService(
         CancellationToken cancellationToken = default)
     {
         var producto = await GetProductoAsync(id, cancellationToken);
-        return MapDetalle(producto);
+        return await MapDetalleAsync(producto, cancellationToken);
     }
 
     public async Task<IReadOnlyList<ProductoResumenDto>> SearchAsync(
@@ -53,14 +53,16 @@ public sealed class ProductoService(
         CancellationToken cancellationToken = default)
     {
         var productos = await productoRepository.SearchAsync(search, includeInactive, cancellationToken);
-        return productos.Select(MapResumen).ToArray();
+        var dates = await productoRepository.GetLatestMovementDatesAsync(productos.Select(item => item.Id).ToArray(), cancellationToken);
+        return productos.Select(producto => MapResumen(producto, dates.GetValueOrDefault(producto.Id))).ToArray();
     }
 
     public async Task<IReadOnlyList<ProductoResumenDto>> GetAlertsAsync(
         CancellationToken cancellationToken = default)
     {
         var productos = await productoRepository.GetAlertsAsync(cancellationToken);
-        return productos.Select(MapResumen).ToArray();
+        var dates = await productoRepository.GetLatestMovementDatesAsync(productos.Select(item => item.Id).ToArray(), cancellationToken);
+        return productos.Select(producto => MapResumen(producto, dates.GetValueOrDefault(producto.Id))).ToArray();
     }
 
     public async Task<ProductoDetalleDto> UpdateAsync(
@@ -88,7 +90,7 @@ public sealed class ProductoService(
             command.EsFraccionado);
 
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return MapDetalle(producto);
+        return await MapDetalleAsync(producto, cancellationToken);
     }
 
     public async Task<ProductoDetalleDto> ChangeStatusAsync(
@@ -104,7 +106,7 @@ public sealed class ProductoService(
 
         producto.CambiarEstado(activo);
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return MapDetalle(producto);
+        return await MapDetalleAsync(producto, cancellationToken);
     }
 
     public async Task<ProductoDetalleDto> SetMinimumStockAsync(
@@ -118,9 +120,9 @@ public sealed class ProductoService(
             throw new ConflictException("No se puede configurar el stock minimo de un producto inactivo.");
         }
 
-        producto.ConfigurarStockMinimo(stockMinimo);
+        producto.ConfigurarStockMinimo(stockMinimo, currentUser?.Id);
         await unitOfWork.SaveChangesAsync(cancellationToken);
-        return MapDetalle(producto);
+        return await MapDetalleAsync(producto, cancellationToken);
     }
 
     public async Task<MovimientoInventarioDto> RegisterMovementAsync(
@@ -128,10 +130,10 @@ public sealed class ProductoService(
         RegistrarMovimientoInventarioCommand command,
         CancellationToken cancellationToken = default)
     {
-        if (command.Tipo == TipoMovimientoInventario.CargaInicial)
+        if (command.Tipo is not (TipoMovimientoInventario.AjustePositivo or TipoMovimientoInventario.AjusteNegativo))
         {
             throw new ConflictException(
-                "La carga inicial solo puede registrarse durante el alta del producto.");
+                "Los movimientos de compra, venta y servicio se generan desde sus respectivos modulos. Aqui solo se permiten ajustes positivos o negativos.");
         }
 
         var producto = await GetProductoAsync(id, cancellationToken);
@@ -157,13 +159,36 @@ public sealed class ProductoService(
         return movimientos.Select(MapMovimiento).ToArray();
     }
 
+    public async Task<IReadOnlyList<MovimientoInventarioDto>> SearchMovementsAsync(
+        Guid? productoId,
+        DateOnly? desde,
+        DateOnly? hasta,
+        TipoMovimientoInventario? tipo,
+        CancellationToken cancellationToken = default)
+    {
+        if (desde.HasValue && hasta.HasValue && desde > hasta)
+        {
+            throw new Domain.Common.DomainException("La fecha desde no puede ser posterior a la fecha hasta.");
+        }
+
+        var movimientos = await productoRepository.SearchMovementsAsync(
+            productoId, desde, hasta, tipo, cancellationToken);
+        return movimientos.Select(MapMovimiento).ToArray();
+    }
+
     private async Task<Producto> GetProductoAsync(Guid id, CancellationToken cancellationToken)
     {
         return await productoRepository.GetByIdAsync(id, cancellationToken)
             ?? throw new NotFoundException("No se encontro el producto solicitado.");
     }
 
-    private static ProductoResumenDto MapResumen(Producto producto)
+    private async Task<ProductoDetalleDto> MapDetalleAsync(Producto producto, CancellationToken cancellationToken)
+    {
+        var dates = await productoRepository.GetLatestMovementDatesAsync([producto.Id], cancellationToken);
+        return MapDetalle(producto, dates.GetValueOrDefault(producto.Id));
+    }
+
+    private static ProductoResumenDto MapResumen(Producto producto, DateTimeOffset? fechaUltimoMovimientoUtc)
     {
         return new ProductoResumenDto(
             producto.Id,
@@ -180,10 +205,11 @@ public sealed class ProductoService(
             producto.StockMinimo,
             producto.EstadoInventario,
             producto.EsFraccionado,
-            producto.Activo);
+            producto.Activo,
+            fechaUltimoMovimientoUtc);
     }
 
-    private static ProductoDetalleDto MapDetalle(Producto producto)
+    private static ProductoDetalleDto MapDetalle(Producto producto, DateTimeOffset? fechaUltimoMovimientoUtc = null)
     {
         return new ProductoDetalleDto(
             producto.Id,
@@ -203,7 +229,10 @@ public sealed class ProductoService(
             producto.EsFraccionado,
             producto.Activo,
             producto.CreadoEnUtc,
-            producto.ActualizadoEnUtc);
+            producto.ActualizadoEnUtc,
+            fechaUltimoMovimientoUtc,
+            producto.StockMinimoActualizadoEnUtc,
+            producto.StockMinimoActualizadoPorUsuarioId);
     }
 
     private static MovimientoInventarioDto MapMovimiento(MovimientoInventario movimiento)
@@ -217,6 +246,17 @@ public sealed class ProductoService(
             movimiento.StockResultante,
             movimiento.Motivo,
             movimiento.ReferenciaId,
-            movimiento.FechaUtc);
+            movimiento.FechaUtc,
+            movimiento.UsuarioId,
+            movimiento.Tipo switch
+            {
+                TipoMovimientoInventario.EntradaCompra => "Compra",
+                TipoMovimientoInventario.Salida => "Venta o servicio",
+                TipoMovimientoInventario.Entrada => "Devolucion o correccion",
+                TipoMovimientoInventario.AjustePositivo or TipoMovimientoInventario.AjusteNegativo => "Ajuste",
+                TipoMovimientoInventario.CargaInicial => "Carga inicial",
+                TipoMovimientoInventario.DevolucionProveedor => "Devolucion a proveedor",
+                _ => "Otro"
+            });
     }
 }

@@ -120,6 +120,18 @@ public sealed class ProductosController(ProductoService productoService) : Contr
         return Ok(await productoService.GetMovementsAsync(id, tipo, cancellationToken));
     }
 
+    [HttpGet("/api/inventario/movimientos")]
+    [ProducesResponseType<IReadOnlyList<MovimientoInventarioDto>>(StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<MovimientoInventarioDto>>> SearchMovements(
+        [FromQuery] Guid? productoId,
+        [FromQuery] DateOnly? desde,
+        [FromQuery] DateOnly? hasta,
+        [FromQuery] TipoMovimientoInventario? tipo,
+        CancellationToken cancellationToken)
+    {
+        return Ok(await productoService.SearchMovementsAsync(productoId, desde, hasta, tipo, cancellationToken));
+    }
+
     [HttpPost("{id:guid}/movimientos")]
     [ProducesResponseType<MovimientoInventarioDto>(StatusCodes.Status201Created)]
     public async Task<ActionResult<MovimientoInventarioDto>> RegisterMovement(

@@ -306,6 +306,9 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.Property<bool>("EsIngreso")
                         .HasColumnType("bit");
 
+                    b.Property<Guid?>("FacturaCompraId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<DateTimeOffset>("FechaUtc")
                         .HasColumnType("datetimeoffset");
 
@@ -325,6 +328,9 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.Property<string>("Motivo")
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid?>("PagoCompraId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid?>("PagoGastoId")
                         .HasColumnType("uniqueidentifier");
@@ -352,6 +358,8 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("FacturaCompraId");
+
                     b.HasIndex("FechaUtc");
 
                     b.HasIndex("GastoId");
@@ -359,6 +367,10 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.HasIndex("JornadaCajaId");
 
                     b.HasIndex("MedioPagoId");
+
+                    b.HasIndex("PagoCompraId")
+                        .IsUnique()
+                        .HasFilter("[PagoCompraId] IS NOT NULL");
 
                     b.HasIndex("PagoGastoId")
                         .IsUnique()
@@ -537,6 +549,277 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                         .IsUnique();
 
                     b.ToTable("Clientes", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Compras.Compra", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("ActualizadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("ActualizadoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("AnuladaEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("AnuladaPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset?>("CerradaEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("CerradaPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreadoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<string>("MotivoAnulacion")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("MotivoCierre")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<Guid>("ProveedorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Fecha");
+
+                    b.HasIndex("ProveedorId");
+
+                    b.ToTable("Compras", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Compras.DetalleCompra", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("CantidadAceptada")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<decimal>("CantidadSolicitada")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<string>("CodigoProducto")
+                        .IsRequired()
+                        .HasMaxLength(40)
+                        .HasColumnType("nvarchar(40)");
+
+                    b.Property<Guid>("CompraId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("CostoUnitarioEstimado")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("NombreProducto")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<Guid>("ProductoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("TotalRecepcionDanada")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<string>("UnidadMedida")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProductoId");
+
+                    b.HasIndex("CompraId", "ProductoId")
+                        .IsUnique();
+
+                    b.ToTable("DetallesCompra", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Compras.FacturaCompra", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CompraId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreadaEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("CreadoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<DateOnly?>("FechaVencimiento")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("ImporteTotal")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Numero")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompraId", "Numero")
+                        .IsUnique();
+
+                    b.ToTable("FacturasCompra", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Compras.LineaRecepcionCompra", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("CantidadAceptada")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<decimal>("CantidadDanada")
+                        .HasPrecision(18, 3)
+                        .HasColumnType("decimal(18,3)");
+
+                    b.Property<decimal>("CostoUnitario")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("DetalleCompraId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<Guid>("RecepcionCompraId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DetalleCompraId");
+
+                    b.HasIndex("RecepcionCompraId", "DetalleCompraId")
+                        .IsUnique();
+
+                    b.ToTable("LineasRecepcionCompra", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Compras.PagoCompra", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid>("FacturaCompraId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<decimal>("Importe")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("MedioPagoId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("Observacion")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("Referencia")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("MedioPagoId");
+
+                    b.HasIndex("FacturaCompraId", "Fecha");
+
+                    b.ToTable("PagosCompra", (string)null);
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Compras.RecepcionCompra", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("CompraId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTimeOffset>("CreadaEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<DateOnly>("Fecha")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Observaciones")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)");
+
+                    b.Property<string>("Remito")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<Guid>("UsuarioId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompraId", "Fecha");
+
+                    b.ToTable("RecepcionesCompra", (string)null);
                 });
 
             modelBuilder.Entity("SistLubri.Domain.Gastos.Gasto", b =>
@@ -833,6 +1116,12 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.Property<decimal>("StockMinimo")
                         .HasPrecision(18, 3)
                         .HasColumnType("decimal(18,3)");
+
+                    b.Property<DateTimeOffset?>("StockMinimoActualizadoEnUtc")
+                        .HasColumnType("datetimeoffset");
+
+                    b.Property<Guid?>("StockMinimoActualizadoPorUsuarioId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<decimal>("StockReservado")
                         .HasPrecision(18, 3)
@@ -1603,6 +1892,11 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("SistLubri.Domain.Caja.MovimientoCaja", b =>
                 {
+                    b.HasOne("SistLubri.Domain.Compras.FacturaCompra", null)
+                        .WithMany()
+                        .HasForeignKey("FacturaCompraId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("SistLubri.Domain.Gastos.Gasto", null)
                         .WithMany()
                         .HasForeignKey("GastoId")
@@ -1613,6 +1907,11 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                         .HasForeignKey("JornadaCajaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.HasOne("SistLubri.Domain.Compras.PagoCompra", "PagoCompra")
+                        .WithOne()
+                        .HasForeignKey("SistLubri.Domain.Caja.MovimientoCaja", "PagoCompraId")
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("SistLubri.Domain.Gastos.PagoGasto", "PagoGasto")
                         .WithOne("MovimientoCaja")
@@ -1625,6 +1924,8 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("JornadaCaja");
+
+                    b.Navigation("PagoCompra");
 
                     b.Navigation("PagoGasto");
 
@@ -1651,6 +1952,82 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                         .IsRequired();
 
                     b.Navigation("JornadaCaja");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Compras.Compra", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Proveedores.Proveedor", "Proveedor")
+                        .WithMany()
+                        .HasForeignKey("ProveedorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Proveedor");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Compras.DetalleCompra", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Compras.Compra", null)
+                        .WithMany("Detalles")
+                        .HasForeignKey("CompraId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SistLubri.Domain.Productos.Producto", null)
+                        .WithMany()
+                        .HasForeignKey("ProductoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Compras.FacturaCompra", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Compras.Compra", "Compra")
+                        .WithMany("Facturas")
+                        .HasForeignKey("CompraId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Compra");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Compras.LineaRecepcionCompra", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Compras.DetalleCompra", null)
+                        .WithMany()
+                        .HasForeignKey("DetalleCompraId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistLubri.Domain.Compras.RecepcionCompra", null)
+                        .WithMany("Lineas")
+                        .HasForeignKey("RecepcionCompraId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Compras.PagoCompra", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Compras.FacturaCompra", null)
+                        .WithMany("Pagos")
+                        .HasForeignKey("FacturaCompraId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("SistLubri.Domain.Caja.MedioPago", null)
+                        .WithMany()
+                        .HasForeignKey("MedioPagoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Compras.RecepcionCompra", b =>
+                {
+                    b.HasOne("SistLubri.Domain.Compras.Compra", null)
+                        .WithMany("Recepciones")
+                        .HasForeignKey("CompraId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("SistLubri.Domain.Gastos.Gasto", b =>
@@ -1805,6 +2182,25 @@ namespace SistLubri.Infrastructure.Persistence.Migrations
                     b.Navigation("Cierres");
 
                     b.Navigation("Movimientos");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Compras.Compra", b =>
+                {
+                    b.Navigation("Detalles");
+
+                    b.Navigation("Facturas");
+
+                    b.Navigation("Recepciones");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Compras.FacturaCompra", b =>
+                {
+                    b.Navigation("Pagos");
+                });
+
+            modelBuilder.Entity("SistLubri.Domain.Compras.RecepcionCompra", b =>
+                {
+                    b.Navigation("Lineas");
                 });
 
             modelBuilder.Entity("SistLubri.Domain.Gastos.Gasto", b =>

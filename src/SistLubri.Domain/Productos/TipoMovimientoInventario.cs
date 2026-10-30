@@ -6,5 +6,7 @@ public enum TipoMovimientoInventario
     Entrada = 2,
     Salida = 3,
     AjustePositivo = 4,
-    AjusteNegativo = 5
+    AjusteNegativo = 5,
+    EntradaCompra = 6,
+    DevolucionProveedor = 7
 }

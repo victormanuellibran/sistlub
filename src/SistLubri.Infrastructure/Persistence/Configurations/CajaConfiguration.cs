@@ -53,7 +53,13 @@ internal sealed class MovimientoCajaConfiguration : IEntityTypeConfiguration<Mov
         builder.HasIndex(movement => movement.PagoVentaId).IsUnique().HasFilter("[PagoVentaId] IS NOT NULL");
         builder.HasIndex(movement => movement.PagoGastoId).IsUnique().HasFilter("[PagoGastoId] IS NOT NULL");
         builder.HasIndex(movement => movement.ReintegroGastoId).IsUnique().HasFilter("[ReintegroGastoId] IS NOT NULL");
+        builder.HasIndex(movement => movement.FacturaCompraId);
+        builder.HasIndex(movement => movement.PagoCompraId).IsUnique().HasFilter("[PagoCompraId] IS NOT NULL");
         builder.HasOne<SistLubri.Domain.Gastos.Gasto>().WithMany().HasForeignKey(movement => movement.GastoId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne<SistLubri.Domain.Compras.FacturaCompra>().WithMany().HasForeignKey(movement => movement.FacturaCompraId)
+            .OnDelete(DeleteBehavior.Restrict);
+        builder.HasOne(movement => movement.PagoCompra).WithOne().HasForeignKey<MovimientoCaja>(movement => movement.PagoCompraId)
             .OnDelete(DeleteBehavior.Restrict);
     }
 }

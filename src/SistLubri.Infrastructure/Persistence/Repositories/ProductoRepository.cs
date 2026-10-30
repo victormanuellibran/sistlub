@@ -42,6 +42,22 @@ internal sealed class ProductoRepository(SistLubriDbContext dbContext) : IProduc
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyDictionary<Guid, DateTimeOffset>> GetLatestMovementDatesAsync(
+        IReadOnlyCollection<Guid> productoIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (productoIds.Count == 0)
+            return new Dictionary<Guid, DateTimeOffset>();
+
+        var dates = await dbContext.MovimientosInventario
+            .AsNoTracking()
+            .Where(movimiento => productoIds.Contains(movimiento.ProductoId))
+            .GroupBy(movimiento => movimiento.ProductoId)
+            .Select(group => new { ProductoId = group.Key, Fecha = group.Max(movimiento => movimiento.FechaUtc) })
+            .ToDictionaryAsync(item => item.ProductoId, item => item.Fecha, cancellationToken);
+        return dates;
+    }
+
     public async Task<IReadOnlyList<Producto>> GetAlertsAsync(
         CancellationToken cancellationToken = default)
     {
@@ -63,6 +79,7 @@ internal sealed class ProductoRepository(SistLubriDbContext dbContext) : IProduc
     {
         var query = dbContext.MovimientosInventario
             .AsNoTracking()
+            .Include(movimiento => movimiento.Producto)
             .Where(movimiento => movimiento.ProductoId == productoId);
 
         if (tipo.HasValue)
@@ -73,6 +90,32 @@ internal sealed class ProductoRepository(SistLubriDbContext dbContext) : IProduc
         return await query
             .OrderByDescending(movimiento => movimiento.FechaUtc)
             .Take(200)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<IReadOnlyList<MovimientoInventario>> SearchMovementsAsync(
+        Guid? productoId,
+        DateOnly? desde,
+        DateOnly? hasta,
+        TipoMovimientoInventario? tipo,
+        CancellationToken cancellationToken = default)
+    {
+        var query = dbContext.MovimientosInventario
+            .AsNoTracking()
+            .Include(movimiento => movimiento.Producto)
+            .AsQueryable();
+
+        if (productoId.HasValue)
+            query = query.Where(movimiento => movimiento.ProductoId == productoId.Value);
+        if (desde.HasValue)
+            query = query.Where(movimiento => movimiento.FechaUtc >= desde.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+        if (hasta.HasValue)
+            query = query.Where(movimiento => movimiento.FechaUtc < hasta.Value.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
+        if (tipo.HasValue)
+            query = query.Where(movimiento => movimiento.Tipo == tipo.Value);
+
+        return await query.OrderByDescending(movimiento => movimiento.FechaUtc)
+            .Take(500)
             .ToListAsync(cancellationToken);
     }
 

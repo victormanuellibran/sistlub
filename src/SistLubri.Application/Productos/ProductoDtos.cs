@@ -17,7 +17,8 @@ public sealed record ProductoResumenDto(
     decimal StockMinimo,
     EstadoInventario EstadoInventario,
     bool EsFraccionado,
-    bool Activo);
+    bool Activo,
+    DateTimeOffset? FechaUltimoMovimientoUtc);
 
 public sealed record ProductoDetalleDto(
     Guid Id,
@@ -37,7 +38,10 @@ public sealed record ProductoDetalleDto(
     bool EsFraccionado,
     bool Activo,
     DateTimeOffset CreadoEnUtc,
-    DateTimeOffset? ActualizadoEnUtc);
+    DateTimeOffset? ActualizadoEnUtc,
+    DateTimeOffset? FechaUltimoMovimientoUtc,
+    DateTimeOffset? StockMinimoActualizadoEnUtc,
+    Guid? StockMinimoActualizadoPorUsuarioId);
 
 public sealed record MovimientoInventarioDto(
     Guid Id,
@@ -48,7 +52,9 @@ public sealed record MovimientoInventarioDto(
     decimal StockResultante,
     string Motivo,
     Guid? ReferenciaId,
-    DateTimeOffset FechaUtc);
+    DateTimeOffset FechaUtc,
+    Guid? UsuarioId,
+    string Origen);
 
 public sealed record CrearProductoCommand(
     string Codigo,

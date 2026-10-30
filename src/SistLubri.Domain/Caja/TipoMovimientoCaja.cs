@@ -10,5 +10,6 @@ public enum TipoMovimientoCaja
     AnulacionVenta = 6,
     ReintegroVenta = 7,
     EgresoGasto = 8,
-    ReintegroGasto = 9
+    ReintegroGasto = 9,
+    EgresoCompra = 10
 }
